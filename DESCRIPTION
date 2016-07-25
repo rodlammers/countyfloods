@@ -1,9 +1,15 @@
 Package: countyfloods
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Quantifying Flood Impacts at the County Level using USGS River Discharge Data
 Version: 0.0.0.9000
-Author: Who wrote it
-Maintainer: Who to complain to <yourfault@somewhere.net>
+Authors@R: person("Rod", "Lammers", email = "rodlammers@gmail.com",
+  role = c("aut", "cre"))
+Maintainer: Rod Lammers <rodlammers@gmail.com>
 Description: More about what it does (maybe more than one line)
 License: What license is it under?
 LazyData: TRUE
+Imports:
+    dataRetrieval,
+    ggplot2,
+    maps,
+    plyr
