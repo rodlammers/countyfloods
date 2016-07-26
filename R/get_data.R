@@ -33,11 +33,19 @@ get_gages <- function(county_cd, start_date, end_date){
   #Get gages by county code. This serves two purposes: first, the whatNWISsites function
   #has a limit of 20 county codes so calling by county avoides this issues; second, this
   #allows for the county code to be stored with each gage number
-  gages <- lapply(county_cd, gage_extract, start_date, end_date)
+  safe_gage_extract <- purrr::safely(gage_extract, quiet = TRUE)
+  gages <- lapply(county_cd, safe_gage_extract, start_date, end_date)
 
-  gages <- suppressWarnings(dplyr::bind_rows(gages))
+  check_data <- sapply(gages, function(x) is.null(x$result))
 
-  return(gages)
+  gages_list <- lapply(gages[!check_data], function(x) x$result)
+  gages_list <- suppressWarnings(dplyr::bind_rows(gages_list))
+
+  #remove query time column and remove duplicates
+  gages_list <- gages_list[,!names(gages_list) %in% "queryTime"]
+  gages_list <- unique(gages_list)
+
+  return(gages_list)
 }
 
 
@@ -60,4 +68,17 @@ get_flow_data <- function(site_no, start_date, end_date){
 }
 
 
+#Function get_county_cd gets all FIPS county codes given a vector of state names
+get_county_cd <- function(state){
 
+  state <- tolower(state)
+
+  fips_cd <- plyr::adply(state, 1, function(x) {
+    code <- fips_table$fips[fips_table$state %in% x]
+    return(data.frame(x, code))
+  })
+
+  fips_cd_array <- as.character(fips_cd$code)
+
+  return(fips_cd_array)
+}

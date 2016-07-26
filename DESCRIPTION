@@ -12,4 +12,8 @@ Imports:
     dataRetrieval,
     ggplot2,
     maps,
-    plyr
+    plyr,
+    purrr,
+    R.utils,
+    viridis
+Suggests: testthat

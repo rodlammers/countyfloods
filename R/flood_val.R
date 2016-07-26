@@ -31,7 +31,7 @@ find_Q2 <- function(site_no){
   Peaks <- suppressWarnings(dataRetrieval::readNWISpeak(siteNumbers = site_no))
 
   #use values to construct probability plot using the Weibull plotting method
-  Q2 <- plyr::ddply(Peaks, "site_no", function(x) {
+  flood <- plyr::ddply(Peaks, "site_no", function(x) {
     vals <- x$peak_va
 
     #Remove NAs, rank, and find the probability
@@ -47,9 +47,30 @@ find_Q2 <- function(site_no){
       Q2 <- approx(x = prob, y = vals, xout = 0.5)
       Q2 <- Q2$y
     }
-    return(data.frame(Q2 = Q2, Years = n))
+    return(data.frame(flood_val = Q2, Years = n))
   })
 
-  return(Q2)
+  return(flood)
 }
 
+#Option 3: Use National Weather Service designated flood stages/discharges as
+#flood thresholds. These come in four levels: "action", "flood", "moderate", and
+#"major". Note that most USGS gages do not have these values specified (or may
+#not have all levels) so using this definition of threshold can severely limit
+#the sample size of the data output.
+find_NWS <- function(site_no, type) {
+
+  #check capitalization and append "_Q"
+  type <- R.utils::capitalize(tolower(type))
+  type <- paste0(type, "_Q")
+
+  flood_val <- ldply(site_no, function(x) {
+    val <- NWS_flood_discharge[ ,type][NWS_flood_discharge$USGS %in% x]
+
+    if (length(val) == 0) {val <- NA}
+
+    return(data.frame(site_no = x, flood_val = val))
+
+  })
+
+}

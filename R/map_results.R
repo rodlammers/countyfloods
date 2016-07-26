@@ -17,24 +17,28 @@
 #   points(flood_stats$long, flood_stats$lat, pch = 19, cex = 1.5, col = colors)
 # }
 
-map_data <- function(flood_stats) {
+map_function <- function(flood_stats) {
   #drop NA rows
   flood_stats <- flood_stats[!is.na(flood_stats$peak), ]
 
   #colors <- colorRampPalette(c("blue","yellow"))(length(flood_stats$peak))
 
-  midpoint <- (max(flood_stats$peak) - min(flood_stats$peak)) / 2
+  midpoint <- min((max(flood_stats$peak) - min(flood_stats$peak)) / 2, 2.5)
 
-  counties <- ggplot2::map_data('county', region = 'colorado')
+
+  region <- as.character(unique(flood_stats$state))
+
+  counties <- ggplot2::map_data('county', region = region)
   counties_sub <- subset(counties, subregion %in% test$county)
   ggplot2::ggplot(counties_sub, ggplot2::aes(x = long, y = lat, group = group)) +
-    ggplot2::geom_polygon(fill = "gray80", color = "black") +
-    ggplot2::geom_point(data = flood_stats, ggplot2::aes(x = long, y = lat, group = NA,
-                                                         color = peak, size = 3, alpha = 0.5), show.legend = FALSE) +
-    ggplot2::scale_color_gradient2(low = "blue", mid = "white", high = "yellow", midpoint = midpoint, space = "Lab") +
-    #ggplot2::scale_color_manual(values = colors) +
+    ggplot2::geom_polygon(fill = "gray95", color = "black") +
     ggplot2::geom_polygon(data = counties, ggplot2::aes(x = long, y = lat, group = group),
-                 fill = NA, color = "black") +
+                          fill = NA, color = "black") +
+    ggplot2::geom_point(data = flood_stats, ggplot2::aes(x = long, y = lat, group = NA, color = peak),
+                        size = 4, alpha = 0.8, show.legend = FALSE) +
+    #ggplot2::scale_color_gradient2(low = "black", mid = "blue", high = "yellow", midpoint = midpoint, space = "Lab") +
+    #ggplot2::scale_color_manual(values = colors) +
+    viridis::scale_color_viridis() +
     ggplot2::theme_bw()
     #ggplot2::theme(legend.position = "none")
 }
