@@ -2,8 +2,10 @@ Package: countyfloods
 Type: Package
 Title: Quantify US County-Level Flood Impacts using USGS Data
 Version: 0.0.0.9000
-Authors@R: person("Rod", "Lammers", email = "rodlammers@gmail.com",
-  role = c("aut", "cre"))
+Authors@R: c(person("Rod", "Lammers", email = "rodlammers@gmail.com",
+  role = c("aut", "cre")),
+  person("Brooke", "Anderson", email = "brooke.anderson@colostate.edu",
+  role = "aut"))
 Description: Quantifies United States flood impacts at the county level using
     USGS River Discharge data.
 License: What license is it under?
