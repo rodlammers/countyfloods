@@ -22,15 +22,6 @@
 #'
 #' @export
 get_gages <- function(county_cd, start_date, end_date){
-  gage_extract <- function(county_cd, start_date, end_date){
-    gages <- dataRetrieval::whatNWISsites(countyCd = county_cd, hasDataTypeCd = "dv",
-                           parameterCd = c("00060"), startDT = start_date,
-                           endDT = end_date)
-
-    gages$county_cd <- county_cd
-
-    return(gages)
-  }
 
   #   This extra code is not necessary if searching by FIPS code. It only
   #   becomes important if searching by bounding boxes where errors can
@@ -67,7 +58,15 @@ get_gages <- function(county_cd, start_date, end_date){
   return(gages_list)
 }
 
+gage_extract <- function(county_cd, start_date, end_date){
+  gages <- dataRetrieval::whatNWISsites(countyCd = county_cd, hasDataTypeCd = "dv",
+                                        parameterCd = c("00060"), startDT = start_date,
+                                        endDT = end_date)
 
+  gages$county_cd <- county_cd
+
+  return(gages)
+}
 
 #Function get_flow_data retrieves discharge data for the selected gage numbers and the selected
 #date range
