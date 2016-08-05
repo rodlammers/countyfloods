@@ -1,0 +1,16 @@
+---
+title: "Using the `countyflood` package"
+author: "Rod Lammers and Brooke Anderson"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+## Overview of the package
+
+## Basic example
+
+## More detailed examples
