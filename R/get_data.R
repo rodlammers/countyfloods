@@ -68,7 +68,22 @@ get_flow_data <- function(site_no, start_date, end_date){
 }
 
 
-#Function get_county_cd gets all FIPS county codes given a vector of state names
+#' Get all FIPS county codes within states
+#'
+#' This function will return all county FIPS codes for all counties within a
+#' state or states.
+#'
+#' @param state Character vector giving the name of state or states for which
+#'    you would like to get county FIPS codes.
+#'
+#' @return A character vector with the 5-digit FIPS codes for all counties
+#'    within the specified state or states.
+#'
+#' @examples
+#'  get_county_cd("Virginia")
+#'  get_county_cd(c("North Carolina", "South Carolina"))
+#'
+#' @export
 get_county_cd <- function(state){
 
   state <- tolower(state)
