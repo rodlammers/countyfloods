@@ -1,5 +1,7 @@
-
-#Takes flow data and computes flood statistics based on selected flood definition
+#' Compute flood statistics
+#'
+#'  Takes flow data and computes flood statistics based on selected flood
+#' definition.
 flood_analysis <- function(flow_data, peaks, gages){
 
   #Add Q2 values to flow_data data frame
