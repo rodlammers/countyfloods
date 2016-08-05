@@ -58,9 +58,28 @@ get_gages <- function(county_cd, start_date, end_date){
   return(gages_list)
 }
 
+#' Get gages for a county
+#'
+#' This function uses the \code{whatNWISsites} function from the
+#' \code{dataRetrieval} package to pull information on all stream gages within
+#' a county and then adds the county FIPS code as an additional column to the
+#' dataframe.
+#'
+#' @inheritParams get_gages
+#'
+#' @return A dataframe with information about stream gages within a county for
+#'    a specified time frame.
+#'
+#' @examples
+#'
+#' gage_extract("12086", start_date = "2000-01-01", end_date = "2009-12-31")
+#'
+#' @export
 gage_extract <- function(county_cd, start_date, end_date){
-  gages <- dataRetrieval::whatNWISsites(countyCd = county_cd, hasDataTypeCd = "dv",
-                                        parameterCd = c("00060"), startDT = start_date,
+  gages <- dataRetrieval::whatNWISsites(countyCd = county_cd,
+                                        hasDataTypeCd = "dv",
+                                        parameterCd = c("00060"),
+                                        startDT = start_date,
                                         endDT = end_date)
 
   gages$county_cd <- county_cd
