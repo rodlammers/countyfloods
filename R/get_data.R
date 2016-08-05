@@ -1,7 +1,26 @@
-#get USGS stations with data within date range: get_gages function will search
-#for gages using county FIPS codes, start and end dates either for each county
-#or single bounding dates for the entire search
-
+#' Get gage numbers for a given county and date range
+#'
+#' Pulls gage numbers of all gages within a county and within the specified
+#' date range.
+#'
+#' @param county_cd Character vector with the county FIPS code
+#' @param start_date Character string with the starting date, using "YYYY-MM-DD"
+#'    notation.
+#' @param end_date Character string with the end date, using "YYYY-MM-DD"
+#'    notation.
+#'
+#' @return A dataframe with gage names and numbers for stream gages within
+#'    the county and time range.
+#'
+#' @examples
+#'
+#' get_gages("12086", start_date = "1988-01-01", end_date = "2015-01-01")
+#'
+#' va_counties <- get_county_cd("Virginia")
+#' va_gages <- get_gages(va_counties, start_date = "2015-01-01",
+#'                       end_date = "2015-12-31")
+#'
+#' @export
 get_gages <- function(county_cd, start_date, end_date){
   gage_extract <- function(county_cd, start_date, end_date){
     gages <- dataRetrieval::whatNWISsites(countyCd = county_cd, hasDataTypeCd = "dv",
