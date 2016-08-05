@@ -71,7 +71,77 @@ flood_analysis <- function(flow_data, peaks, gages){
   #sort flood stats by magnitude
   flood_stats <- flood_stats[order(flood_stats$peak),]
 
+  #Create categories of flood peaks for display
+  flood_cat <- function(flood_stats) {
+    if (is.na(flood_stats$peak)) {
+      flood_stats$flood <- NA
+    }else if(flood_stats$peak < 1) {
+      flood_stats$flood <- "None"
+    }else if (flood_stats$peak < 1.5) {
+      flood_stats$flood <- "Minor"
+    }else if (flood_stats$peak < 2) {
+      flood_stats$flood <- "Moderate"
+    }else if (flood_stats$peak < 5) {
+      flood_stats$flood <- "Major"
+    }else {
+      flood_stats$flood <- "Extreme"
+    }
+
+    return(flood_stats)
+  }
+
+  flood_stats <- plyr::adply(flood_stats, 1, flood_cat)
+  flood_stats$flood <- as.factor(flood_stats$flood)
+  flood_stats$flood <- factor(flood_stats$flood, levels(flood_stats$flood)[c(1,2,4,3,5)])
+
+  #Remove NAs
+  flood_stats <- flood_stats[!is.na(flood_stats$peak), ]
+
   return(flood_stats)
 }
 
+#Function aggregates gage-level output into county-level output
+county_aggregates <- function(flood_stats){
+
+  aggregate_fun <- function(gage_flood){
+    #county and state name
+    county <- gage_flood$county[1]
+    state <- gage_flood$state[1]
+
+    #number of gages
+    n_gage <- length(gage_flood$site_no)
+
+    #max flood peak
+    max_peak <- max(gage_flood$peak)
+
+    #avg flood peak
+    avg_peak <- mean(gage_flood$peak)
+
+    #number of gages at different flood stages
+    stage <- c("Minor", "Moderate", "Major", "Extreme")
+
+    num <- sapply(stage, function(x) {sum(gage_flood$flood == x)})
+
+    #Convert numbers into percentages at or above that flood class
+    minor <- round(sum(num) / n_gage * 100, 1)
+    moderate <- round(sum(num[2:4]) / n_gage * 100, 1)
+    major <- round(sum(num[3:4]) / n_gage * 100, 1)
+    extreme <- round(sum(num[4]) / n_gage * 100, 1)
+
+    #max flood duration
+    max_dur <- max(gage_flood$flood_dur)
+
+    #avg flood duration
+    avg_dur <- mean(gage_flood$flood_dur)
+
+    return(data.frame(county = county, state = state, num_gages = n_gage,
+                      max_peak = max_peak, avg_peak = avg_peak,
+                      minor = minor, moderate = moderate, major = major,
+                      extreme = extreme, max_dur = max_dur, avg_dur = avg_dur))
+  }
+
+  county_stats <- plyr::ddply(flood_stats, "county_cd", aggregate_fun)
+
+  return(county_stats)
+}
 
