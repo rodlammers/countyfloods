@@ -8,7 +8,7 @@ Authors@R: c(person("Rod", "Lammers", email = "rodlammers@gmail.com",
   role = "aut"))
 Description: Quantifies United States flood impacts at the county level using
     USGS River Discharge data.
-License: What license is it under?
+License: GPL-2
 LazyData: TRUE
 Imports:
     dataRetrieval,
