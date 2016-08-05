@@ -1,5 +1,5 @@
 ---
-title: "Using the `countyflood` package"
+title: "Using the `countyfloods` package"
 author: "Rod Lammers and Brooke Anderson"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
@@ -9,8 +9,26 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+```{r echo = FALSE}
+library(countyfloods)
+```
+
+
 ## Overview of the package
 
 ## Basic example
+
+You can use the `get_county_cd` function to get a vector of all counties within a state: 
+
+```{r}
+get_county_cd(state = c("Georgia", "Alabama"))
+```
+
+You can use the `get_gages` function to pull all gages within a county or counties. For example, to get information on all gages for Miami-Dade county, you can run: 
+
+```{r}
+get_gages("12086", start_date = "1988-01-01", end_date = "2015-01-01")
+```
+
 
 ## More detailed examples
