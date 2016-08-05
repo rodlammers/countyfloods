@@ -87,12 +87,29 @@ gage_extract <- function(county_cd, start_date, end_date){
   return(gages)
 }
 
-#Function get_flow_data retrieves discharge data for the selected gage numbers and the selected
-#date range
+#' Retrieve discharge data at specified gages
+#'
+#' Pulls all discharge data for the specified gage numbers and date range.
+#'
+#' @param site_no Character vector with numbers of stream gage sites to pull.
+#' @inheritParams get_gages
+#'
+#' @return A list with discharge data for each of the specified monitors.
+#'
+#' @examples
+#'
+#' miami_gages <- gage_extract("12086", start_date = "2000-01-01",
+#'                             end_date = "2009-12-31")
+#' miami_flow_data <- get_flow_data(site_no = miami_gages$site_no,
+#'                                  start_date = "2000-01-01",
+#'                                  end_date = "2000-01-31")
+#'
+#' @export
 get_flow_data <- function(site_no, start_date, end_date){
 
   flow_data <- lapply(site_no, function(x){
-    dataRetrieval::readNWISdv(siteNumber = x, parameterCd = "00060", startDate = start_date, endDate = end_date)
+    dataRetrieval::readNWISdv(siteNumber = x, parameterCd = "00060",
+                              startDate = start_date, endDate = end_date)
   })
 
 
@@ -101,7 +118,9 @@ get_flow_data <- function(site_no, start_date, end_date){
   flow_data <- lapply(flow_data[omit > 0], function(x) {x})
 
   #rename flow.data Q column
-  flow_data <- lapply(flow_data, plyr::rename, replace = c("X_00060_00003" = "Discharge"))
+  flow_data <- lapply(flow_data, plyr::rename,
+                      replace = c("X_00060_00003" = "Discharge"))
+  return(flow_data)
 }
 
 
