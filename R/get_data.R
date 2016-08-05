@@ -149,7 +149,8 @@ get_county_cd <- function(state){
     return(data.frame(x, code))
   })
 
-  fips_cd_array <- as.character(fips_cd$code)
+  #put all fips codes in single array, adding a leading zero if codes are only 4 digits long
+  fips_cd_array <- sprintf("%05d",fips_cd$code)
 
   return(fips_cd_array)
 }

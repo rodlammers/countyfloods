@@ -23,6 +23,7 @@ run_flood <- function(county_cd = NULL, state = NULL, start_date, end_date, thre
   flood_stats <- flood_analysis(flow_data, peaks, gages)
 
   return(flood_stats)
+
 }
 
 map_flood <- function(flood_stats){
