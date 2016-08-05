@@ -1,17 +1,27 @@
-#get USGS stations with data within date range: get_gages function will search
-#for gages using county FIPS codes, start and end dates either for each county
-#or single bounding dates for the entire search
-
+#' Get gage numbers for a given county and date range
+#'
+#' Pulls gage numbers of all gages within a county and within the specified
+#' date range.
+#'
+#' @param county_cd Character vector with the county FIPS code
+#' @param start_date Character string with the starting date, using "YYYY-MM-DD"
+#'    notation.
+#' @param end_date Character string with the end date, using "YYYY-MM-DD"
+#'    notation.
+#'
+#' @return A dataframe with gage names and numbers for stream gages within
+#'    the county and time range.
+#'
+#' @examples
+#'
+#' get_gages("12086", start_date = "1988-01-01", end_date = "2015-01-01")
+#'
+#' va_counties <- get_county_cd("Virginia")
+#' va_gages <- get_gages(va_counties, start_date = "2015-01-01",
+#'                       end_date = "2015-12-31")
+#'
+#' @export
 get_gages <- function(county_cd, start_date, end_date){
-  gage_extract <- function(county_cd, start_date, end_date){
-    gages <- dataRetrieval::whatNWISsites(countyCd = county_cd, hasDataTypeCd = "dv",
-                           parameterCd = c("00060"), startDT = start_date,
-                           endDT = end_date)
-
-    gages$county_cd <- county_cd
-
-    return(gages)
-  }
 
   #   This extra code is not necessary if searching by FIPS code. It only
   #   becomes important if searching by bounding boxes where errors can
@@ -48,7 +58,34 @@ get_gages <- function(county_cd, start_date, end_date){
   return(gages_list)
 }
 
+#' Get gages for a county
+#'
+#' This function uses the \code{whatNWISsites} function from the
+#' \code{dataRetrieval} package to pull information on all stream gages within
+#' a county and then adds the county FIPS code as an additional column to the
+#' dataframe.
+#'
+#' @inheritParams get_gages
+#'
+#' @return A dataframe with information about stream gages within a county for
+#'    a specified time frame.
+#'
+#' @examples
+#'
+#' gage_extract("12086", start_date = "2000-01-01", end_date = "2009-12-31")
+#'
+#' @export
+gage_extract <- function(county_cd, start_date, end_date){
+  gages <- dataRetrieval::whatNWISsites(countyCd = county_cd,
+                                        hasDataTypeCd = "dv",
+                                        parameterCd = c("00060"),
+                                        startDT = start_date,
+                                        endDT = end_date)
 
+  gages$county_cd <- county_cd
+
+  return(gages)
+}
 
 #Function get_flow_data retrieves discharge data for the selected gage numbers and the selected
 #date range
@@ -68,7 +105,22 @@ get_flow_data <- function(site_no, start_date, end_date){
 }
 
 
-#Function get_county_cd gets all FIPS county codes given a vector of state names
+#' Get all FIPS county codes within states
+#'
+#' This function will return all county FIPS codes for all counties within a
+#' state or states.
+#'
+#' @param state Character vector giving the name of state or states for which
+#'    you would like to get county FIPS codes.
+#'
+#' @return A character vector with the 5-digit FIPS codes for all counties
+#'    within the specified state or states.
+#'
+#' @examples
+#'  get_county_cd("Virginia")
+#'  get_county_cd(c("North Carolina", "South Carolina"))
+#'
+#' @export
 get_county_cd <- function(state){
 
   state <- tolower(state)

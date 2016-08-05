@@ -1,12 +1,14 @@
 Package: countyfloods
 Type: Package
-Title: Quantifying Flood Impacts at the County Level using USGS River Discharge Data
+Title: Quantify US County-Level Flood Impacts using USGS Data
 Version: 0.0.0.9000
-Authors@R: person("Rod", "Lammers", email = "rodlammers@gmail.com",
-  role = c("aut", "cre"))
-Maintainer: Rod Lammers <rodlammers@gmail.com>
-Description: More about what it does (maybe more than one line)
-License: What license is it under?
+Authors@R: c(person("Rod", "Lammers", email = "rodlammers@gmail.com",
+  role = c("aut", "cre")),
+  person("Brooke", "Anderson", email = "brooke.anderson@colostate.edu",
+  role = "aut"))
+Description: Quantifies United States flood impacts at the county level using
+    USGS River Discharge data.
+License: GPL-2
 LazyData: TRUE
 Imports:
     dataRetrieval,
@@ -16,4 +18,9 @@ Imports:
     purrr,
     R.utils,
     viridis
-Suggests: testthat
+Suggests:
+    testthat,
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
+RoxygenNote: 5.0.1
