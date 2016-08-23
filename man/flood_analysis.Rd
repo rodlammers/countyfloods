@@ -6,8 +6,46 @@
 \usage{
 flood_analysis(flow_data, peaks, gages)
 }
+\arguments{
+\item{flow_data}{A data frame with discharge data for each USGS gage found
+for the specified data range. Output from \code{get_flow_data} function.}
+
+\item{peaks}{A data frame of USGS gage IDs and flood values obtained from
+either the \code{find_Q2} or \code{find_NWS} function.}
+
+\item{gages}{A data frame of all USGS gages and metadata obtained from the
+\code{get_gages} function. This input is used to add lat/long and county
+codes to the summarized output.}
+}
+\value{
+A data frame with the following columns:
+\tabular{lll}{
+Name \tab Type \tab Description\cr
+site_no \tab character \tab USGS gage ID\cr
+avg_peak \tab numeric \tab Mean flood ratio for date range (discharge/flood threshold)\cr
+flood_dur \tab numeric \tab Number of days in date range discharge above flood threshold\cr
+peak \tab numeric \tab Maximum value of flood ratio for date range (discharge/flood threshold)\cr
+lat \tab numeric \tab Gage latitude\cr
+long \tab numeric \tab Gage longitude\cr
+county_cd \tab character \tab FIPS code of gage county location\cr
+county \tab character \tab County name\cr
+state \tab character \tab State name\cr
+flood \tab character \tab Flood magnitude category based on peak
+}
+}
 \description{
 Takes flow data and computes flood statistics based on selected flood
-definition.
+threshold.
+}
+\examples{
+va_counties <- get_county_cd("Virginia")
+va_gages <- get_gages(va_counties, start_date = "2015-01-01",
+                      end_date = "2015-12-31")
+va_flow_data <- get_flow_data(va_gages$gage_no, start_date = "2015-01-01",
+                      end_date = "2015-12-31")
+va_peaks <- find_Q2(va_gages$gage_no)
+va_stats <- flood_analysis(flow_data = va_flow_data, peaks = va_peaks,
+                       gages = va_gages)
+
 }
 

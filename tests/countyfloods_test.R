@@ -23,7 +23,17 @@ state <- "south carolina"
 start_date <- as.Date("2015-10-01", format = "%Y-%m-%d")
 end_date <- as.Date("2015-10-15", format = "%Y-%m-%d")
 
-test <- run_flood(state = state, start_date = start_date, end_date = end_date, threshold = "Q2", output = "county")
+test <- run_flood(state = state, start_date = start_date, end_date = end_date,
+                  threshold = "Q2", output = "county")
 
 map_flood(test)
 
+
+#Virginia Tests
+va_floods <- run_flood(state = "Virginia", start_date = "2015-01-01",
+                      end_date = "2015-12-31", threshold = "Q2", output = "gage")
+map_flood(va_floods)
+va_floods <- run_flood(state = "Virginia", start_date = "2015-01-01",
+                      end_date = "2015-12-31", threshold = "NWS", flood_type = "action",
+                      output = "county")
+map_flood(va_floods)

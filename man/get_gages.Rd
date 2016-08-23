@@ -20,8 +20,8 @@ A dataframe with gage names and numbers for stream gages within
    the county and time range.
 }
 \description{
-Pulls gage numbers of all gages within a county and within the specified
-date range.
+Pulls gage numbers of all gages with discharge data within a county and
+within the specified date range.
 }
 \examples{
 

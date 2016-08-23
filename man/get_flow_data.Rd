@@ -7,7 +7,7 @@
 get_flow_data(site_no, start_date, end_date)
 }
 \arguments{
-\item{site_no}{Character vector with numbers of stream gage sites to pull.}
+\item{site_no}{Character vector with USGS gage IDs of stream gage sites to pull.}
 
 \item{start_date}{Character string with the starting date, using "YYYY-MM-DD"
 notation.}
@@ -23,8 +23,11 @@ Pulls all discharge data for the specified gage numbers and date range.
 }
 \examples{
 
-get_flow_data(site_no = "02031000", start_date = "2000-01-01",
-              end_date = "2000-01-31")
+miami_gages <- gage_extract("12086", start_date = "2000-01-01",
+                            end_date = "2009-12-31")
+miami_flow_data <- get_flow_data(site_no = miami_gages$site_no,
+                                 start_date = "2000-01-01",
+                                 end_date = "2000-01-31")
 
 }
 

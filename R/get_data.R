@@ -1,7 +1,7 @@
 #' Get gage numbers for a given county and date range
 #'
-#' Pulls gage numbers of all gages within a county and within the specified
-#' date range.
+#' Pulls gage numbers of all gages with discharge data within a county and
+#' within the specified date range.
 #'
 #' @param county_cd Character vector with the county FIPS code
 #' @param start_date Character string with the starting date, using "YYYY-MM-DD"
@@ -22,23 +22,6 @@
 #'
 #' @export
 get_gages <- function(county_cd, start_date, end_date){
-
-  #   This extra code is not necessary if searching by FIPS code. It only
-  #   becomes important if searching by bounding boxes where errors can
-  #   occur.
-
-  #   safe_gage <- safely(gage_extract, quiet = TRUE)
-  #   gages2 <- safe_gage(county_cd, start_date, end_date)
-  #
-  #   gages_list <- gages2$.out
-  #   check_data <- sapply(gages_list, function(x) is.null(x$result))
-  #
-  #   gages_list_out <- lapply(gages_list[!check_data],
-  #                            function(x) x$result)
-  #   gages_list_out <- suppressWarnings(dplyr::bind_rows(gages_list_out))
-  #   #remove query time column and remove duplicates
-  #   gages_list_out <- gages_list_out[,!names(gages_list_out) %in% "queryTime"]
-  #   gages_list_out <- unique(gages_list_out)
 
   #Get gages by county code. This serves two purposes: first, the whatNWISsites function
   #has a limit of 20 county codes so calling by county avoides this issues; second, this
@@ -91,7 +74,7 @@ gage_extract <- function(county_cd, start_date, end_date){
 #'
 #' Pulls all discharge data for the specified gage numbers and date range.
 #'
-#' @param site_no Character vector with numbers of stream gage sites to pull.
+#' @param site_no Character vector with USGS gage IDs of stream gage sites to pull.
 #' @inheritParams get_gages
 #'
 #' @return A list with discharge data for each of the specified monitors.
