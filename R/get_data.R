@@ -38,8 +38,9 @@ get_gages <- function(county_cd, start_date, end_date){
   gages_list <- suppressWarnings(dplyr::bind_rows(gages_list))
 
   #remove query time column and remove duplicates
-  gages_list <- gages_list[,!names(gages_list) %in% "queryTime"]
-  gages_list <- unique(gages_list)
+  gages_list <- gages_list %>%
+    dplyr::select_(.dots = list(quote(-queryTime))) %>%
+    dplyr::distinct_()
 
   return(gages_list)
 }
