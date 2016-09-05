@@ -131,18 +131,19 @@ get_flow_data <- function(site_no, start_date, end_date){
 #'  get_county_cd("Virginia")
 #'  get_county_cd(c("North Carolina", "South Carolina"))
 #'
+#' @importFrom dplyr %>%
+#'
 #' @export
 get_county_cd <- function(state){
 
-  state <- tolower(state)
+  chosen_states <- tolower(state)
 
-  fips_cd <- plyr::adply(state, 1, function(x) {
-    code <- fips_table$fips[fips_table$state %in% x]
-    return(data.frame(x, code))
-  })
+  fips_cd <- fips_table %>%
+    filter_(~ state %in% chosen_states)
 
-  #put all fips codes in single array, adding a leading zero if codes are only 4 digits long
-  fips_cd_array <- sprintf("%05d",fips_cd$code)
+  #put all fips codes in single array, adding a leading zero if codes are only
+  # 4 digits long. Also, ensure that each FIPS code only is output once.
+  fips_cd_array <- unique(sprintf("%05d",fips_cd$fips))
 
   return(fips_cd_array)
 }
