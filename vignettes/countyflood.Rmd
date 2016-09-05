@@ -26,15 +26,17 @@ get_county_cd(state = c("Georgia", "Alabama"))
 
 You can use the `get_gages` function to pull all gages within a county or counties. For example, to get information on all gages for Miami-Dade county, you can run: 
 
-```{r}
-get_gages("12086", start_date = "1988-01-01", end_date = "2015-01-01")
+```{r message = FALSE}
+library(dplyr)
+get_gages("12086", start_date = "1988-01-01", end_date = "2015-01-01") %>%
+  slice(1:5)
 ```
 
 You can use these two functions together within a pipe chain. For example, to get information on all the gages in Virginia in 2015, you can run: 
 
-```{r}
+```{r message = FALSE}
 va_gages <- get_county_cd("Virginia") %>%
-   get_gages(va_counties, start_date = "2015-01-01", end_date = "2015-12-31")
+   get_gages(start_date = "2015-01-01", end_date = "2015-12-31")
 head(va_gages)
 ```
 
@@ -60,12 +62,11 @@ Each element of this list gives streamflow data for one of the gages:
 head(southampton_data[[1]])
 ```
 
-```{r}
+```{r fig.width = 6, fig.height = 3.5}
+library(ggplot2)
 ggplot(southampton_data[[1]], aes(x = Date, y = Discharge)) + 
   geom_line()
 ```
-
-
 
 
 ## More detailed examples
