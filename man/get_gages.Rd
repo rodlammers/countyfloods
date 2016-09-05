@@ -30,9 +30,9 @@ get_gages("12086", start_date = "1988-01-01", end_date = "2015-01-01")
 va_counties <- get_county_cd("Virginia")
 va_gages <- get_gages(va_counties, start_date = "2015-01-01",
                       end_date = "2015-12-31")
-
+# Equivalent with piping
 va_gages <- get_county_cd("Virginia") \%>\%
-   get_gages(va_counties, start_date = "2015-01-01", end_date = "2015-12-31")
+   get_gages(start_date = "2015-01-01", end_date = "2015-12-31")
 
 }
 
