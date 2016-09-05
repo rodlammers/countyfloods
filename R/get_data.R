@@ -23,6 +23,8 @@
 #' va_gages <- get_county_cd("Virginia") %>%
 #'    get_gages(start_date = "2015-01-01", end_date = "2015-12-31")
 #'
+#' @importFrom dplyr %>%
+#'
 #' @export
 get_gages <- function(county_cd, start_date, end_date){
 
