@@ -30,5 +30,14 @@ You can use the `get_gages` function to pull all gages within a county or counti
 get_gages("12086", start_date = "1988-01-01", end_date = "2015-01-01")
 ```
 
+You can use these two functions together within a pipe chain. For example, to get information on all the gages in Virginia in 2015, you can run: 
+
+```{r}
+va_gages <- get_county_cd("Virginia") %>%
+   get_gages(va_counties, start_date = "2015-01-01", end_date = "2015-12-31")
+head(va_gages)
+```
+
+
 
 ## More detailed examples
