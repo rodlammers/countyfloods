@@ -38,6 +38,34 @@ va_gages <- get_county_cd("Virginia") %>%
 head(va_gages)
 ```
 
+Once you have a list of gage numbers for which you would like to pull flow data, you can use the `get_flow_data` function to pull that data. For example, to pull data for all the stream gage flow data for 1999 for gages in Southhampton County, VA (FIPS code 51175), you can run: 
+
+```{r}
+southampton_gages <- get_gages("51175", start_date = "1999-01-01",
+                                end_date = "1999-12-31")
+southampton_data <- get_flow_data(southampton_gages$site_no, start_date = "1999-01-01",
+                                  end_date = "1999-12-31")
+```
+
+The output from `get_flow_data` is a list with as many elements as there are gages with non-missing data: 
+
+```{r}
+class(southampton_data)
+length(southampton_data)
+```
+
+Each element of this list gives streamflow data for one of the gages: 
+
+```{r}
+head(southampton_data[[1]])
+```
+
+```{r}
+ggplot(southampton_data[[1]], aes(x = Date, y = Discharge)) + 
+  geom_line()
+```
+
+
 
 
 ## More detailed examples
