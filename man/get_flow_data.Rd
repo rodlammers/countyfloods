@@ -16,7 +16,11 @@ notation.}
 notation.}
 }
 \value{
-A list with discharge data for each of the specified monitors.
+A list with discharge data for each of the specified monitors. The
+   element of this list for each monitor is a dataframe that typically
+   includes columns for the gage site number, date of each observation,
+   [fill in other common outputs-- X_PUBLISHED_00060_00003 and
+   X_PUBLISHED_00060_00003_cd].
 }
 \description{
 Pulls all discharge data for the specified gage numbers and date range.

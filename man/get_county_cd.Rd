@@ -2,13 +2,13 @@
 % Please edit documentation in R/get_data.R
 \name{get_county_cd}
 \alias{get_county_cd}
-\title{Get all FIPS county codes within states}
+\title{Get all FIPS county codes within a state}
 \usage{
 get_county_cd(state)
 }
 \arguments{
-\item{state}{Character vector giving the name of state or states for which
-you would like to get county FIPS codes.}
+\item{state}{Character vector giving the name of state or states (not case
+sensitive) for which you would like to get county FIPS codes.}
 }
 \value{
 A character vector with the 5-digit FIPS codes for all counties

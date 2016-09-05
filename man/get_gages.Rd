@@ -2,7 +2,7 @@
 % Please edit documentation in R/get_data.R
 \name{get_gages}
 \alias{get_gages}
-\title{Get gage numbers for a given county and date range}
+\title{Get all gage site numbers for a county}
 \usage{
 get_gages(county_cd, start_date, end_date)
 }

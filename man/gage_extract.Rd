@@ -2,7 +2,7 @@
 % Please edit documentation in R/get_data.R
 \name{gage_extract}
 \alias{gage_extract}
-\title{Get gages for a county}
+\title{Get gage meta-data for a county}
 \usage{
 gage_extract(county_cd, start_date, end_date)
 }
@@ -17,7 +17,9 @@ notation.}
 }
 \value{
 A dataframe with information about stream gages within a county for
-   a specified time frame.
+   a specified time frame. This information typically includes each gage's
+   site number, station name, agency code, site type code, latitude,
+   longitude, and county code.
 }
 \description{
 This function uses the \code{whatNWISsites} function from the
