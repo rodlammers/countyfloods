@@ -31,5 +31,8 @@ va_counties <- get_county_cd("Virginia")
 va_gages <- get_gages(va_counties, start_date = "2015-01-01",
                       end_date = "2015-12-31")
 
+va_gages <- get_county_cd("Virginia") \%>\%
+   get_gages(va_counties, start_date = "2015-01-01", end_date = "2015-12-31")
+
 }
 
