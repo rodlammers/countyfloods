@@ -1,4 +1,4 @@
-#' Get gage numbers for a given county and date range
+#' Get all gage site numbers for a county
 #'
 #' Pulls gage numbers of all gages with discharge data within a county and
 #' within the specified date range.
@@ -27,7 +27,7 @@
 get_gages <- function(county_cd, start_date, end_date){
 
   #Get gages by county code. This serves two purposes: first, the whatNWISsites function
-  #has a limit of 20 county codes so calling by county avoides this issues; second, this
+  #has a limit of 20 county codes so calling by county avoids this issues; second, this
   #allows for the county code to be stored with each gage number
   safe_gage_extract <- purrr::safely(gage_extract, quiet = TRUE)
   gages <- lapply(county_cd, safe_gage_extract, start_date, end_date)
@@ -44,7 +44,7 @@ get_gages <- function(county_cd, start_date, end_date){
   return(gages_list)
 }
 
-#' Get gages for a county
+#' Get gage meta-data for a county
 #'
 #' This function uses the \code{whatNWISsites} function from the
 #' \code{dataRetrieval} package to pull information on all stream gages within
@@ -54,7 +54,9 @@ get_gages <- function(county_cd, start_date, end_date){
 #' @inheritParams get_gages
 #'
 #' @return A dataframe with information about stream gages within a county for
-#'    a specified time frame.
+#'    a specified time frame. This information typically includes each gage's
+#'    site number, station name, agency code, site type code, latitude,
+#'    longitude, and county code.
 #'
 #' @examples
 #'
@@ -80,7 +82,11 @@ gage_extract <- function(county_cd, start_date, end_date){
 #' @param site_no Character vector with USGS gage IDs of stream gage sites to pull.
 #' @inheritParams get_gages
 #'
-#' @return A list with discharge data for each of the specified monitors.
+#' @return A list with discharge data for each of the specified monitors. The
+#'    element of this list for each monitor is a dataframe that typically
+#'    includes columns for the gage site number, date of each observation,
+#'    [fill in other common outputs-- X_PUBLISHED_00060_00003 and
+#'    X_PUBLISHED_00060_00003_cd].
 #'
 #' @examples
 #'
@@ -110,13 +116,13 @@ get_flow_data <- function(site_no, start_date, end_date){
 }
 
 
-#' Get all FIPS county codes within states
+#' Get all FIPS county codes within a state
 #'
 #' This function will return all county FIPS codes for all counties within a
 #' state or states.
 #'
-#' @param state Character vector giving the name of state or states for which
-#'    you would like to get county FIPS codes.
+#' @param state Character vector giving the name of state or states (not case
+#'    sensitive) for which you would like to get county FIPS codes.
 #'
 #' @return A character vector with the 5-digit FIPS codes for all counties
 #'    within the specified state or states.
