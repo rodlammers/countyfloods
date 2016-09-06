@@ -2,7 +2,7 @@
 
 export(construct_prob_plot)
 export(county_aggregates)
-export(find_NWS)
+export(find_nws)
 export(find_q2)
 export(flood_analysis)
 export(gage_extract)
