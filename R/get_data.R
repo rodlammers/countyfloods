@@ -147,7 +147,7 @@ get_county_cd <- function(state){
   chosen_states <- tolower(state)
 
   fips_cd <- fips_table %>%
-    filter_(~ state %in% chosen_states)
+    dplyr::filter_(~ state %in% chosen_states)
 
   #put all fips codes in single array, adding a leading zero if codes are only
   # 4 digits long. Also, ensure that each FIPS code only is output once.
