@@ -2,10 +2,10 @@
 % Please edit documentation in R/user_fun.R
 \name{run_flood}
 \alias{run_flood}
-\title{Function returns flood metrics for inputted county codes or state names}
+\title{Return flood metrics by county codes or state names}
 \usage{
 run_flood(county_cd = NULL, state = NULL, start_date, end_date, threshold,
-  flood_type = NULL, output = "gage")
+  flood_type = "flood", output = "gage")
 }
 \arguments{
 \item{county_cd}{Character vector with the county FIPS code(s)}
@@ -80,11 +80,14 @@ returned at the gage level or the county level.
 \examples{
 #Use Q2 as flood threshold and get get gage-level output
 va_floods <- run_flood(state = "Virginia", start_date = "2015-01-01",
-                      end_date = "2015-12-31", threshold = "Q2", output = "gage")
+                      end_date = "2015-12-31", threshold = "Q2",
+                      output = "gage")
 
 #Use NWS flood thresholds and get county-level output
 va_floods <- run_flood(state = "Virginia", start_date = "2015-01-01",
-                      end_date = "2015-12-31", threshold = "NWS", flood_type = "action",
+                      end_date = "2015-12-31", threshold = "NWS",
+                      flood_type = "action",
                       output = "county")
+
 }
 
