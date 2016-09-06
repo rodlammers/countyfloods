@@ -106,47 +106,34 @@ flood_analysis <- function(flow_data, peaks, gages){
 #'                        gages = va_gages)
 #' va_county_stats <- county_aggregates(flood_stats = va_stats)
 #'
+#' @importFrom dplyr %>%
+#'
 #' @export
 county_aggregates <- function(flood_stats){
 
-  aggregate_fun <- function(gage_flood){
-    #county and state name
-    county <- gage_flood$county[1]
-    state <- gage_flood$state[1]
-
-    #number of gages
-    n_gage <- length(gage_flood$site_no)
-
-    #max flood peak
-    max_peak <- max(gage_flood$peak)
-
-    #avg flood peak
-    avg_peak <- mean(gage_flood$peak)
-
-    #number of gages at different flood stages
-    stage <- c("Minor", "Moderate", "Major", "Extreme")
-
-    num <- sapply(stage, function(x) {sum(gage_flood$flood == x)})
-
-    #Convert numbers into percentages at or above that flood class
-    minor <- round(sum(num) / n_gage * 100, 1)
-    moderate <- round(sum(num[2:4]) / n_gage * 100, 1)
-    major <- round(sum(num[3:4]) / n_gage * 100, 1)
-    extreme <- round(sum(num[4]) / n_gage * 100, 1)
-
-    #max flood duration
-    max_dur <- max(gage_flood$flood_dur)
-
-    #avg flood duration
-    avg_dur <- mean(gage_flood$flood_dur)
-
-    return(data.frame(county = county, state = state, num_gages = n_gage,
-                      max_peak = max_peak, avg_peak = avg_peak,
-                      minor = minor, moderate = moderate, major = major,
-                      extreme = extreme, max_dur = max_dur, avg_dur = avg_dur))
-  }
-
-  county_stats <- plyr::ddply(flood_stats, "county_cd", aggregate_fun)
+  county_stats <- flood_stats %>%
+    dplyr::group_by_(~ county_cd) %>%
+    dplyr::summarize_(county = ~ dplyr::first(county),
+                      state = ~ dplyr::first(state),
+                      num_gage = ~ n(),
+                      max_peak = ~ max(peak),
+                      avg_peak = ~ mean(peak),
+                      minor = ~ round(100 * sum((flood %in% c("Minor",
+                                                              "Moderate",
+                                                              "Major",
+                                                              "Extreme")) /
+                                                  num_gage), 1),
+                      moderate = ~ round(100 * sum((flood %in% c("Moderate",
+                                                                 "Major",
+                                                                 "Extreme")) /
+                                                     num_gage), 1),
+                      major = ~ round(100 * sum((flood %in% c("Major",
+                                                              "Extreme")) /
+                                                  num_gage), 1),
+                      extreme = ~ round(100 * sum((flood %in% c("Extreme")) /
+                                                    num_gage), 1),
+                      max_dur = ~ max(flood_dur),
+                      avg_dur = ~ mean(flood_dur))
 
   return(county_stats)
 }
