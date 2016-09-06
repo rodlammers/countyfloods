@@ -81,20 +81,21 @@ run_flood <- function(county_cd = NULL, state = NULL, start_date, end_date, thre
   }
 
   #get gages
-  gages <- get_gages(county_cd, start_date, end_date)
+  gages <- get_gages(county_cd, start_date = start_date, end_date = end_date)
 
   #get flow data
-  flow_data <- get_flow_data(gages, start_date, end_date)
+  flow_data <- get_flow_data(gages, start_date = start_date,
+                             end_date = end_date)
 
   #get flow peaks
   if (threshold == "Q2") {
     peaks <- find_q2(gages$site_no)
   }else if (threshold == "NWS") {
-    peaks <- find_NWS(gages$site_no, flood_type)
+    peaks <- find_nws(gages$site_no, type = flood_type)
   }
 
   #get flood stats by gage
-  flood_stats <- flood_analysis(flow_data, peaks, gages)
+  flood_stats <- flood_analysis(flow_data, peaks = peaks, gages = gages)
 
   #get flood stats by county
   county_stats <- county_aggregates(flood_stats)
