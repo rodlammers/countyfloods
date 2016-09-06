@@ -1,6 +1,6 @@
 Package: countyfloods
 Type: Package
-Title: Quantify US County-Level Flood Impacts using USGS Data
+Title: Quantify United States County-Level Flood Measurements
 Version: 0.0.0.9000
 Authors@R: c(person("Rod", "Lammers", email = "rodlammers@gmail.com",
   role = c("aut", "cre")),
