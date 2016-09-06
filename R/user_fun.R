@@ -72,7 +72,8 @@
 #'                       end_date = "2015-12-31", threshold = "NWS",
 #'                       flood_type = "action",
 #'                       output = "county")
-
+#'
+#' @export
 run_flood <- function(county_cd = NULL, state = NULL, start_date, end_date, threshold,
                       flood_type = "flood", output = "gage"){
 
