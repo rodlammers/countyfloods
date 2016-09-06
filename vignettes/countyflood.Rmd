@@ -123,5 +123,31 @@ va_county_stats <- county_aggregates(flood_stats = va_floods)
 head(va_county_stats)
 ```
 
+You can use the `run_flood` function to put all of this together, and pull all flood summaries by either gage (`output = "gage"`), county (`output = "county"`), or both (`output = "both"`) for either a set of counties or all counties in a state.
+
+For example, to get all the flood statistics by gage for all gages with available data in Virginia, you can run: 
+
+```{r message = FALSE}
+va_floods <- run_flood(state = "Virginia", start_date = "2015-01-01",
+                       end_date = "2015-12-31", threshold = "Q2",
+                       output = "gage")
+head(va_floods)
+```
+
+Similarly, to get county-level data for counties in Florida in 2004, you can run:
+
+```{r message = FALSE}
+fl_floods <- run_flood(state = "Florida", start_date = "2004-01-01",
+                       end_date = "2004-12-31", threshold = "Q2",
+                       output = "county")
+head(fl_floods)
+```
+
+These output can be mapped using the `map_flood` function:
+
+```{r fig.width = 8, fig.height = 3.5, fig.align = "center", message = FALSE}
+map_flood(va_floods)
+```
+
 
 ## More detailed examples
