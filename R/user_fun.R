@@ -72,7 +72,7 @@
 #'                       output = "county")
 
 run_flood <- function(county_cd = NULL, state = NULL, start_date, end_date, threshold,
-                      flood_type = NULL, output = "gage"){
+                      flood_type = "flood", output = "gage"){
 
   #Determine if county codes or state name was provided. If state name given,
   #find all county codes in the state
