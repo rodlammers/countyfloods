@@ -7,13 +7,14 @@
 get_flow_data(gages_df, start_date, end_date)
 }
 \arguments{
+\item{gages_df}{A dataframe that includes the column \code{site_no}, a
+character vector with USGS gage IDs of stream gage sites to pull.}
+
 \item{start_date}{Character string with the starting date, using "YYYY-MM-DD"
 notation.}
 
 \item{end_date}{Character string with the end date, using "YYYY-MM-DD"
 notation.}
-
-\item{site_no}{Character vector with USGS gage IDs of stream gage sites to pull.}
 }
 \value{
 A dataframe with discharge data for each of the specified monitors.

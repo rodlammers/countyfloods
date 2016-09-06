@@ -34,7 +34,7 @@ Function aggregates gage-level output into county-level output
 va_counties <- get_county_cd("Virginia")
 va_gages <- get_gages(va_counties, start_date = "2015-01-01",
                       end_date = "2015-12-31")
-va_flow_data <- get_flow_data(va_gages$gage_no, start_date = "2015-01-01",
+va_flow_data <- get_flow_data(va_gages, start_date = "2015-01-01",
                       end_date = "2015-12-31")
 va_peaks <- find_Q2(va_gages$gage_no)
 va_stats <- flood_analysis(flow_data = va_flow_data, peaks = va_peaks,
