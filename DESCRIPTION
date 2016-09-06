@@ -7,7 +7,10 @@ Authors@R: c(person("Rod", "Lammers", email = "rodlammers@gmail.com",
   person("Brooke", "Anderson", email = "brooke.anderson@colostate.edu",
   role = "aut"))
 Description: Quantifies United States flood impacts at the county level using
-    USGS River Discharge data.
+    United States Geological Service (USGS) River Discharge data for the USGS
+    API. This package builds on R packages from the USGS, with the goal of
+    creating county-level time series of flood status that can be more easily
+    joined with county-level impact measurements, including health outcomes.
 License: GPL-2
 LazyData: TRUE
 Depends:
