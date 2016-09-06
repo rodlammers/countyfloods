@@ -1,4 +1,4 @@
-#' Function returns flood metrics for inputted county codes or state names
+#' Return flood metrics by county codes or state names
 #'
 #' Access USGS databases to retrieve gages and flow data for the specified
 #' counties/states or county FIPS codes and the specified date ranges. Flooding
