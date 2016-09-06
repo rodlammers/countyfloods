@@ -37,14 +37,14 @@ get_gages <- function(county_cd, start_date, end_date){
   check_data <- sapply(gages, function(x) is.null(x$result))
 
   gages_list <- lapply(gages[!check_data], function(x) x$result)
-  gages_list <- suppressWarnings(dplyr::bind_rows(gages_list))
+  gages_df <- suppressWarnings(dplyr::bind_rows(gages_list))
 
   #remove query time column and remove duplicates
-  gages_list <- gages_list %>%
+  gages_df <- gages_df %>%
     dplyr::select_(.dots = list(quote(-queryTime))) %>%
     dplyr::distinct_()
 
-  return(gages_list)
+  return(gages_df)
 }
 
 #' Get gage meta-data for a county
@@ -85,8 +85,8 @@ gage_extract <- function(county_cd, start_date, end_date){
 #' @param site_no Character vector with USGS gage IDs of stream gage sites to pull.
 #' @inheritParams get_gages
 #'
-#' @return A list with discharge data for each of the specified monitors. The
-#'    element of this list for each monitor is a dataframe that typically
+#' @return A dataframe with discharge data for each of the specified monitors.
+#'    This is a dataframe that typically
 #'    includes columns for the gage site number, date of each observation,
 #'    [fill in other common outputs-- X_PUBLISHED_00060_00003 and
 #'    X_PUBLISHED_00060_00003_cd].
@@ -95,14 +95,19 @@ gage_extract <- function(county_cd, start_date, end_date){
 #'
 #' miami_gages <- gage_extract("12086", start_date = "2000-01-01",
 #'                             end_date = "2009-12-31")
-#' miami_flow_data <- get_flow_data(site_no = miami_gages$site_no,
+#' miami_flow_data <- get_flow_data(gages_df = miami_gages,
 #'                                  start_date = "2000-01-01",
+#'                                  end_date = "2000-01-31")
+#'# Example using piping
+#' miami_flow_data <- gage_extract("12086", start_date = "2000-01-01",
+#'                                 end_date = "2009-12-31") %>%
+#'                    get_flow_data(start_date = "2000-01-01",
 #'                                  end_date = "2000-01-31")
 #'
 #' @export
-get_flow_data <- function(site_no, start_date, end_date){
+get_flow_data <- function(gages_df, start_date, end_date){
 
-  flow_data <- lapply(site_no, function(x){
+  flow_data <- lapply(gages_df$site_no, function(x){
     dataRetrieval::readNWISdv(siteNumber = x, parameterCd = "00060",
                               startDate = start_date, endDate = end_date)
   })
@@ -111,10 +116,9 @@ get_flow_data <- function(site_no, start_date, end_date){
   #remove stations with no discharge data
   omit <- sapply(flow_data, function(x) {length(x)})
   flow_data <- lapply(flow_data[omit > 0], function(x) {x})
+  flow_data <- dplyr::bind_rows(flow_data) %>%
+    dplyr::rename_(.dots = list(date = "Date", discharge = "X_00060_00003"))
 
-  #rename flow.data Q column
-  flow_data <- lapply(flow_data, plyr::rename,
-                      replace = c("X_00060_00003" = "Discharge"))
   return(flow_data)
 }
 

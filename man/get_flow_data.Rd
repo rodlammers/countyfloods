@@ -4,16 +4,16 @@
 \alias{get_flow_data}
 \title{Retrieve discharge data at specified gages}
 \usage{
-get_flow_data(site_no, start_date, end_date)
+get_flow_data(gages_df, start_date, end_date)
 }
 \arguments{
-\item{site_no}{Character vector with USGS gage IDs of stream gage sites to pull.}
-
 \item{start_date}{Character string with the starting date, using "YYYY-MM-DD"
 notation.}
 
 \item{end_date}{Character string with the end date, using "YYYY-MM-DD"
 notation.}
+
+\item{site_no}{Character vector with USGS gage IDs of stream gage sites to pull.}
 }
 \value{
 A list with discharge data for each of the specified monitors. The
@@ -29,8 +29,13 @@ Pulls all discharge data for the specified gage numbers and date range.
 
 miami_gages <- gage_extract("12086", start_date = "2000-01-01",
                             end_date = "2009-12-31")
-miami_flow_data <- get_flow_data(site_no = miami_gages$site_no,
+miami_flow_data <- get_flow_data(gages_df = miami_gages,
                                  start_date = "2000-01-01",
+                                 end_date = "2000-01-31")
+# Example using piping
+miami_flow_data <- gage_extract("12086", start_date = "2000-01-01",
+                                end_date = "2009-12-31") \%>\%
+                   get_flow_data(start_date = "2000-01-01",
                                  end_date = "2000-01-31")
 
 }
