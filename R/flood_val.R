@@ -59,8 +59,10 @@ construct_prob_plot <- function(vals){
 #'
 #' Use National Weather Service designated flood stages/discharges as flood
 #' thresholds. These come in four levels: "action", "flood", "moderate", and
-#' "major". Note that most USGS gages do not have these values specified (or may
-#' not have all levels) so using this definition of the flood threshold can
+#' "major".
+#'
+#' @note Since most USGS gages do not have these values specified (or may
+#' not have all levels), using this definition of the flood threshold can
 #' severely limit the sample size of the data output.
 #'
 #' @param site_no Character vector with USGS gage IDs of stream gage sites to
