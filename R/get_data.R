@@ -82,7 +82,8 @@ gage_extract <- function(county_cd, start_date, end_date){
 #'
 #' Pulls all discharge data for the specified gage numbers and date range.
 #'
-#' @param site_no Character vector with USGS gage IDs of stream gage sites to pull.
+#' @param gages_df A dataframe that includes the column \code{site_no}, a
+#'    character vector with USGS gage IDs of stream gage sites to pull.
 #' @inheritParams get_gages
 #'
 #' @return A dataframe with discharge data for each of the specified monitors.
