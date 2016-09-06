@@ -75,7 +75,33 @@ One way to get this is with the `find_nws` function, which gets the National Wea
 ```{r}
 va_nws <- find_nws(site_no = va_gages$site_no, type = "moderate")
 head(va_nws)
+dim(va_nws)
 ```
+
+Another way is with the `find_q2` function:
+
+```{r}
+va_q2 <- find_q2(site_no = va_gages$site_no)
+head(va_q2)
+dim(va_q2)
+```
+
+You can compare the results from these two methods for sites where you can get both values: 
+
+```{r fig.width = 4, fig.height = 3.5, fig.align = "center"}
+va_flood_stage <- va_nws %>%
+  rename(flood_nws = flood_val) %>%
+  inner_join(va_q2, by = "site_no") %>%
+  rename(flood_q2 = flood_val)
+ggplot(va_flood_stage, aes(x = flood_q2, y = flood_nws)) + 
+  geom_point(alpha = 0.5) + 
+  geom_abline(aes(intercept = 0, slope = 1), linetype = 3) + 
+  geom_smooth(method = "lm", se = FALSE)
+```
+
+For the Virginia monitors, you can see that the flood values from NWS and the Q2 method are well-correlated, although NWS values tend to be consistently higher than Q2 values.
+
+
 
 
 ## More detailed examples
