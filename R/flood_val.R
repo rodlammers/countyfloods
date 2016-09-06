@@ -78,23 +78,25 @@ construct_prob_plot <- function(vals){
 #' va_counties <- get_county_cd("Virginia")
 #' va_gages <- get_gages(va_counties, start_date = "2015-01-01",
 #'                       end_date = "2015-12-31")
-#' va_NWS <- find_NWS(site_no = va_gages$site_no, type = "moderate")
+#' va_nws <- find_nws(site_no = va_gages$site_no, type = "moderate")
 #'
 #' @export
-find_NWS <- function(site_no, type) {
+find_nws <- function(site_no, type) {
 
   #check capitalization and append "_Q" to type
   type <- R.utils::capitalize(tolower(type))
   type <- paste0(type, "_Q")
 
   #match gage and type to NWS data stored internally
-  flood_val <- plyr::ldply(site_no, function(x) {
-    val <- NWS_flood_discharge[ ,type][NWS_flood_discharge$USGS %in% x]
+  flood_val <- NWS_flood_discharge %>%
+    dplyr::select_(~ USGS, ~ Action_Q, ~ Flood_Q, ~ Moderate_Q, ~ Major_Q) %>%
+    dplyr::filter_(~ USGS %in% site_no) %>%
+    tidyr::gather_(key_col = "key", value_col = "flood_val",
+                   gather_cols = c("Action_Q", "Flood_Q",
+                                   "Moderate_Q", "Major_Q")) %>%
+    dplyr::filter_(~ key == type & !is.na(flood_val)) %>%
+    dplyr::select_(.dots = list("-key")) %>%
+    dplyr::rename_(.dots = list(site_no = "USGS"))
 
-    if (length(val) == 0) {val <- NA}
-
-    return(data.frame(site_no = x, flood_val = val))
-
-  })
-
+  return(flood_val)
 }
