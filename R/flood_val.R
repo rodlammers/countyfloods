@@ -13,34 +13,46 @@
 #'
 #' miami_gages <- gage_extract("12086", start_date = "2000-01-01",
 #'                             end_date = "2009-12-31")
-#' miami_Q2 <- find_Q2(site_no = miami_gages$site_no)
+#' miami_q2 <- find_q2(site_no = miami_gages$site_no)
+#'
+#' @importFrom dplyr %>%
 #'
 #' @export
-find_Q2 <- function(site_no){
+find_q2 <- function(site_no){
   #retrieve annual peak discharge data from USGS (dataRetrieval package)
-  Peaks <- suppressWarnings(dataRetrieval::readNWISpeak(siteNumbers = site_no))
+  peaks <- suppressWarnings(dataRetrieval::readNWISpeak(siteNumbers = site_no))
 
   #use values to construct probability plot using the Weibull plotting method
-  flood <- plyr::ddply(Peaks, "site_no", function(x) {
-    vals <- x$peak_va
-
-    #Remove NAs, rank, and find the probability
-    vals <- vals[!is.na(vals)]
-    n <- length(vals)
-
-    if (n < 2) {
-      Q2 <- NA
-    }else {
-      rank <- rank(-vals)
-      prob <- rank/(n+1)
-
-      Q2 <- approx(x = prob, y = vals, xout = 0.5)
-      Q2 <- Q2$y
-    }
-    return(data.frame(flood_val = Q2, Years = n))
-  })
+  flood <- peaks %>%
+    dplyr::group_by_(~ site_no) %>%
+    dplyr::summarize_(flood_val = ~ construct_prob_plot(peak_va),
+                      years = ~ sum(!is.na(peak_va)))
 
   return(flood)
+}
+
+#' Construct probability plot using the Weibull plotting method
+#'
+#' @param vals A numeric vector with peak discharge values ... [more on what
+#'    this column of the data from readNWISpeak gives]
+#'
+#' @export
+construct_prob_plot <- function(vals){
+
+  #Remove NAs, rank, and find the probability
+  vals <- vals[!is.na(vals)]
+  n <- length(vals)
+
+  if (n < 2) {
+    Q2 <- NA
+  } else {
+    rank <- rank(-vals)
+    prob <- rank / (n + 1)
+
+    Q2 <- approx(x = prob, y = vals, xout = 0.5)
+    Q2 <- Q2$y
+  }
+  return(Q2)
 }
 
 #' Get National Weather Service (NWS) flood stage/discharge levels for gages.
