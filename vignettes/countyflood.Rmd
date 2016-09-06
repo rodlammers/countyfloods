@@ -45,7 +45,7 @@ Once you have a list of gage numbers for which you would like to pull flow data,
 ```{r}
 southampton_gages <- get_gages("51175", start_date = "1999-01-01",
                                 end_date = "1999-12-31")
-southampton_data <- get_flow_data(southampton_gages$site_no, start_date = "1999-01-01",
+southampton_data <- get_flow_data(southampton_gages, start_date = "1999-01-01",
                                   end_date = "1999-12-31")
 ```
 
@@ -59,13 +59,22 @@ length(southampton_data)
 Each element of this list gives streamflow data for one of the gages: 
 
 ```{r}
-head(southampton_data[[1]])
+head(southampton_data)
 ```
 
 ```{r fig.width = 6, fig.height = 3.5}
 library(ggplot2)
-ggplot(southampton_data[[1]], aes(x = Date, y = Discharge)) + 
+ggplot(southampton_data, aes(x = date, y = discharge, color = site_no)) + 
   geom_line()
+```
+
+To determine when a flood occurred, we need a value to classify a "flood" for each stream gage.
+
+One way to get this is with the `find_nws` function, which gets the National Weather Service flood value when available for a gage site. For example, for the Virginia gages: 
+
+```{r}
+va_nws <- find_nws(site_no = va_gages$site_no, type = "moderate")
+head(va_nws)
 ```
 
 
