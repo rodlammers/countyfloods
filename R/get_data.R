@@ -93,13 +93,13 @@ gage_extract <- function(county_cd, start_date, end_date){
 #'
 #' @examples
 #'
-#' miami_gages <- gage_extract("12086", start_date = "2000-01-01",
+#' miami_gages <- get_gages("12086", start_date = "2000-01-01",
 #'                             end_date = "2009-12-31")
 #' miami_flow_data <- get_flow_data(gages_df = miami_gages,
 #'                                  start_date = "2000-01-01",
 #'                                  end_date = "2000-01-31")
 #'# Example using piping
-#' miami_flow_data <- gage_extract("12086", start_date = "2000-01-01",
+#' miami_flow_data <- get_gages("12086", start_date = "2000-01-01",
 #'                                 end_date = "2009-12-31") %>%
 #'                    get_flow_data(start_date = "2000-01-01",
 #'                                  end_date = "2000-01-31")

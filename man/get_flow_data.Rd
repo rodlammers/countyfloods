@@ -16,8 +16,8 @@ notation.}
 \item{site_no}{Character vector with USGS gage IDs of stream gage sites to pull.}
 }
 \value{
-A list with discharge data for each of the specified monitors. The
-   element of this list for each monitor is a dataframe that typically
+A dataframe with discharge data for each of the specified monitors.
+   This is a dataframe that typically
    includes columns for the gage site number, date of each observation,
    [fill in other common outputs-- X_PUBLISHED_00060_00003 and
    X_PUBLISHED_00060_00003_cd].
@@ -27,13 +27,13 @@ Pulls all discharge data for the specified gage numbers and date range.
 }
 \examples{
 
-miami_gages <- gage_extract("12086", start_date = "2000-01-01",
+miami_gages <- get_gages("12086", start_date = "2000-01-01",
                             end_date = "2009-12-31")
 miami_flow_data <- get_flow_data(gages_df = miami_gages,
                                  start_date = "2000-01-01",
                                  end_date = "2000-01-31")
 # Example using piping
-miami_flow_data <- gage_extract("12086", start_date = "2000-01-01",
+miami_flow_data <- get_gages("12086", start_date = "2000-01-01",
                                 end_date = "2009-12-31") \%>\%
                    get_flow_data(start_date = "2000-01-01",
                                  end_date = "2000-01-31")
