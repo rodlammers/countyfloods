@@ -58,7 +58,7 @@ construct_prob_plot <- function(vals){
     rank <- rank(-vals)
     prob <- rank / (n + 1)
 
-    Q2 <- approx(x = prob, y = vals, xout = 0.5)
+    Q2 <- stats::approx(x = prob, y = vals, xout = 0.5)
     Q2 <- Q2$y
   }
   return(Q2)
