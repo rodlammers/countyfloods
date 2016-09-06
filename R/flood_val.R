@@ -13,17 +13,26 @@
 #'
 #' miami_gages <- gage_extract("12086", start_date = "2000-01-01",
 #'                             end_date = "2009-12-31")
-#' miami_q2 <- find_q2(site_no = miami_gages$site_no)
+#' miami_q2 <- find_q2(site_no = miami_gages$site_no,
+#'                     start_date = "2000-01-01", end_date = "2009-12-31")
+#'
+#' va_gages <- get_county_cd("Virginia") %>%
+#'    get_gages(start_date = "2015-01-01", end_date = "2015-12-31")
+#' va_q2 <- find_q2(va_gages$site_no)
 #'
 #' @importFrom dplyr %>%
 #'
 #' @export
 find_q2 <- function(site_no){
   #retrieve annual peak discharge data from USGS (dataRetrieval package)
-  peaks <- suppressWarnings(dataRetrieval::readNWISpeak(siteNumbers = site_no))
+  peaks <- suppressWarnings(dataRetrieval::readNWISpeak(siteNumbers = site_no,
+                                                        convertType = FALSE))
 
   #use values to construct probability plot using the Weibull plotting method
   flood <- peaks %>%
+    dplyr::mutate_(peak_dt = ~ suppressWarnings(lubridate::ymd(peak_dt)),
+                   peak_va = ~ as.numeric(peak_va)) %>%
+    dplyr::filter_(~ !is.na(peak_dt)) %>%
     dplyr::group_by_(~ site_no) %>%
     dplyr::summarize_(flood_val = ~ construct_prob_plot(peak_va),
                       years = ~ sum(!is.na(peak_va)))
