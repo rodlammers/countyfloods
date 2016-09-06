@@ -4,7 +4,7 @@ end_date <- as.Date("2013-09-30", format = "%Y-%m-%d")
 county_cd <- c("08013", "08031", "08069", "08001", "08059", "08123")
 
 test <- run_flood(county_cd = county_cd, start_date = start_date,
-                  end_date = end_date, threshold = "Q2", output = "both")
+                  end_date = end_date, threshold = "Q2", output = "gage")
 map_flood(test)
 
 #South Carolina Floods - October 2015
@@ -14,7 +14,8 @@ county_cd <- c("45063", "45079", "45055", "45061", "45085",
                "45017", "45075", "45027", "45089", "45015", "45035",
                "45019", "45043", "45071", "45081", "45039")
 
-test <- run_flood(county_cd, start_date, end_date, threshold = "Q2")
+test <- run_flood(county_cd = county_cd, start_date = start_date,
+                  end_date = end_date, threshold = "Q2")
 map_flood(test)
 
 #Entire state of South Carolina

@@ -19,7 +19,8 @@ notation.}
 A dataframe with information about stream gages within a county for
    a specified time frame. This information typically includes each gage's
    site number, station name, agency code, site type code, latitude,
-   longitude, and county code.
+   longitude, and county code. See the \code{whatNWISsites} function from
+   the \code{dataRetrieval} package for details.
 }
 \description{
 This function uses the \code{whatNWISsites} function from the
@@ -31,5 +32,8 @@ dataframe.
 
 gage_extract("12086", start_date = "2000-01-01", end_date = "2009-12-31")
 
+}
+\seealso{
+\code{\link[dataRetrieval]{whatNWISsites}}
 }
 
