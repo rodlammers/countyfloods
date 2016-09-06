@@ -5,6 +5,10 @@
 #'
 #' @param flood_stats Data frame of flood analysis results, output of
 #'   \code{run_flood} function.
+#' @param category Character string of the flood magnitude category to be used
+#'   for mapping (one of "minor", "moderate", "major", or "extreme"). This
+#'   parameter only works when mapping county-level, rather than gage-level,
+#'   values.
 #'
 #' @return A map of the state(s) analyzed showing counties and gages color coded
 #'   based on flood magnitude, depending on the type of data in flood_stats.
@@ -25,7 +29,7 @@
 #' map_flood(va_floods)
 #'
 #' @export
-map_flood <- function(flood_stats) {
+map_flood <- function(flood_stats, category = "minor") {
 
   #Check if flood_stats data is at the gage- or county-level and call
   #appropriate mapping function
@@ -40,10 +44,11 @@ map_flood <- function(flood_stats) {
   if (output == "gage") {
     map_gage(flood_stats)
   }else if (output == "county") {
-    map_county(flood_stats)
+    map_county(flood_stats, category = category)
   }else if (output == "both") {
-    map_gage(flood_stats[[1]])
-    map_county(flood_stats[[2]])
+    gage_map <- map_gage(flood_stats[[1]])
+    county_map <- map_county(flood_stats[[2]], category = category)
+    return(list(gage_map = gage_map, county_map = county_map))
   }
 }
 
@@ -73,7 +78,7 @@ map_gage <- function(flood_stats) {
     ggplot2::geom_point(data = flood_stats, ggplot2::aes(x = long, y = lat, group = NA, fill = flood),
                         size = 4, alpha = 0.8, pch = 21, show.legend = TRUE) +
     ggplot2::scale_fill_manual(values = colors) +
-    ggplot2::theme_bw()
+    ggplot2::theme_void()
 }
 
 #' Maps flood data by county
@@ -83,8 +88,6 @@ map_gage <- function(flood_stats) {
 #' given flood magnitude.
 #'
 #' @inheritParams map_flood
-#' @param category Character string of the flood magnitude category to be used
-#'   for mapping (one of "minor", "moderate", "major", or "extreme").
 #'
 #' @return A map of counties color coded by percentage of gages experiencing flooding.
 #'
@@ -97,39 +100,31 @@ map_county <- function(county_stats, category = "minor") {
 
   #Set flood exposure "categories" based on percentage of flooded gages and the
   #user-defined metric (e.g. minor, major, extreme flooding)
-  flood_cat <- function(county_stats, category) {
-    flood_cat <- c("minor", "moderate", "major", "extreme")
-    index <- match(category, flood_cat)
-    if(county_stats[6 + index] < 20) {
-      county_stats$cat <- "Low"
-    }else if (county_stats[6 + index] < 40) {
-      county_stats$cat <- "Moderate"
-    }else if (county_stats[6 + index] < 60) {
-      county_stats$cat <- "Moderate-High"
-    }else if (county_stats[6 + index] < 80) {
-      county_stats$cat <- "High"
-    }else {
-      county_stats$cat <- "Very High"
-    }
-
-    return(county_stats)
-  }
-
-  county_stats <- plyr::adply(county_stats, 1, flood_cat, category)
-  county_stats$cat <- factor(county_stats$cat, levels = exposure_cat)
+  county_stats <- county_stats %>%
+    dplyr::select_(.dots = list("county", "state", "minor",
+                                "moderate", "major", "extreme")) %>%
+    tidyr::gather_(key_col = "key", value_col = "value",
+                  gather_cols = c("minor", "moderate", "major", "extreme")) %>%
+    dplyr::filter_(~ key == category) %>%
+    dplyr::mutate_(cat = ~ cut(value, breaks = c(0, 20, 40, 60, 80, 100),
+                            labels = c("Low", "Moderate", "Moderate-High",
+                                       "High", "Very High"),
+                            include.lowest = TRUE, right = FALSE))
 
   region <- as.character(unique(county_stats$state))
 
-  #Get all counties for states analyzed as well as the subset of counties with actual data
+  #Get all counties for states analyzed as well as the subset of counties with
+  # actual data
   counties <- ggplot2::map_data('county', region = region)
   counties_sub <- subset(counties, subregion %in% county_stats$county)
 
-  counties_sub$cat <- county_stats$cat[match(counties_sub$subregion, county_stats$county)]
+  counties_sub$cat <- county_stats$cat[match(counties_sub$subregion,
+                                             county_stats$county)]
 
   ggplot2::ggplot(counties_sub, ggplot2::aes(x = long, y = lat, group = group)) +
     ggplot2::geom_polygon(ggplot2::aes(fill = cat), color = "black") +
     ggplot2::geom_polygon(data = counties, ggplot2::aes(x = long, y = lat, group = group),
                           fill = NA, color = "black") +
     ggplot2::scale_fill_manual(values = colors) +
-    ggplot2::theme_bw()
+    ggplot2::theme_void()
 }
