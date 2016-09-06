@@ -11,6 +11,8 @@ Description: Quantifies United States flood impacts at the county level using
     API. This package builds on R packages from the USGS, with the goal of
     creating county-level time series of flood status that can be more easily
     joined with county-level impact measurements, including health outcomes.
+    This work was supported in part by grants from the National Institute of
+    Environmental Health Sciences (R00ES022631) and the Colorado Water Center.
 License: GPL-2
 LazyData: TRUE
 Depends:
