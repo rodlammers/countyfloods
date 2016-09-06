@@ -116,6 +116,12 @@ ggplot(va_floods, aes(x = peak, fill = flood)) +
   geom_histogram()
 ```
 
+There is also a function that will allow you to get county-level aggregate statistics from this gage-level summary: 
+
+```{r}
+va_county_stats <- county_aggregates(flood_stats = va_floods)
+head(va_county_stats)
+```
 
 
 ## More detailed examples
