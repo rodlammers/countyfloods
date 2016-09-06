@@ -59,7 +59,10 @@ get_gages <- function(county_cd, start_date, end_date){
 #' @return A dataframe with information about stream gages within a county for
 #'    a specified time frame. This information typically includes each gage's
 #'    site number, station name, agency code, site type code, latitude,
-#'    longitude, and county code.
+#'    longitude, and county code. See the \code{whatNWISsites} function from
+#'    the \code{dataRetrieval} package for details.
+#'
+#' @seealso \code{\link[dataRetrieval]{whatNWISsites}}
 #'
 #' @examples
 #'
@@ -87,10 +90,11 @@ gage_extract <- function(county_cd, start_date, end_date){
 #' @inheritParams get_gages
 #'
 #' @return A dataframe with discharge data for each of the specified monitors.
-#'    This is a dataframe that typically
-#'    includes columns for the gage site number, date of each observation,
-#'    [fill in other common outputs-- X_PUBLISHED_00060_00003 and
-#'    X_PUBLISHED_00060_00003_cd].
+#'   This is a dataframe that includes columns for the gage site number, date of
+#'   each observation, and observed mean daily discharge (cubic feet per
+#'   second).
+#'
+#' @seealso \code{\link[dataRetrieval]{readNWISdv}}
 #'
 #' @examples
 #'
@@ -117,8 +121,18 @@ get_flow_data <- function(gages_df, start_date, end_date){
   #remove stations with no discharge data
   omit <- sapply(flow_data, function(x) {length(x)})
   flow_data <- lapply(flow_data[omit > 0], function(x) {x})
+
+  #rename discharge and data columns prior to combining into a singe data frame
+  flow_data <- lapply(flow_data, function(x) {
+    colnames(x)[3] <- "date"
+    colnames(x)[4] <- "discharge"
+    return(x)
+  })
+
+  #Combine into one data frame and keep only site_no, date, and discharge
+  #columns
   flow_data <- dplyr::bind_rows(flow_data) %>%
-    dplyr::rename_(.dots = list(date = "Date", discharge = "X_00060_00003"))
+    dplyr::select(site_no, date, discharge)
 
   return(flow_data)
 }

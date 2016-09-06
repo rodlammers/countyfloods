@@ -4,14 +4,15 @@
 \alias{find_nws}
 \title{Get National Weather Service (NWS) flood stage/discharge levels for gages.}
 \usage{
-find_nws(site_no, type)
+find_nws(site_no, type = "flood")
 }
 \arguments{
 \item{site_no}{Character vector with USGS gage IDs of stream gage sites to
 pull.}
 
 \item{type}{Character string with the type of flood stage to be used. Can be
-one of four options: "action", "flood", "moderate", and "major".}
+one of four options: "action", "flood", "moderate", and "major". Defaults
+to "flood".}
 }
 \value{
 Data frame of gage IDs and the corresponding NWS flood value, if

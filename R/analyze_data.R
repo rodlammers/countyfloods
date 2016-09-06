@@ -47,7 +47,7 @@ flood_analysis <- function(flow_data, peaks, gages){
     #If there is no site match, set flood value to zero
     if (length(flood) == 0) {flood <- NA}
     flow_data$flood <- flood
-    flow_data$flood_ratio <- flow_data$Discharge / flow_data$flood
+    flow_data$flood_ratio <- flow_data$discharge / flow_data$flood
 
     #add lat-longs
     lat <- gages$dec_lat_va[gages$site_no %in% flow_data$site_no[1]]
@@ -62,10 +62,10 @@ flood_analysis <- function(flow_data, peaks, gages){
     return(flow_data)
   }
 
-  flow_data <- lapply(flow_data, add_flood, peaks = peaks, gages = gages)
+  flow_data <- plyr::ddply(flow_data, "site_no", add_flood, peaks = peaks, gages = gages)
 
   #Compute statistics for each gage using flood ratios
-  flood_stats <- plyr::ldply(flow_data, function(x) {
+  flood_stats <- plyr::ddply(flow_data, "site_no", function(x) {
     avg_peak <- mean(x$flood_ratio, na.rm = TRUE)
     flood_dur <- sum(x$flood_ratio > 1, na.rm = TRUE)
     if (sum(!is.na(x$flood_ratio)) == 0){

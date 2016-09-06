@@ -1,13 +1,17 @@
 #' Get median flood for each gage
 #'
 #' This function will get annual maximum flow series for each USGS gage and
-#' compute median flood (Q2) to serve as flood threshold
+#' compute median flood (Q2) to serve as flood threshold. Peak flow data
+#' is obtained using the \code{readNWISpeak} function from the
+#' \code{dataRetrieval} package.
 #'
 #' @param site_no Character vector with USGS gage IDs of stream gage sites to
 #'   pull.
 #'
 #' @return A data frame with median flood values (Q2) and the number of years of
 #'   data used to compute this value.
+#'
+#' @seealso \code{\link[dataRetrieval]{readNWISpeak}}
 #'
 #' @examples
 #'
@@ -42,8 +46,18 @@ find_q2 <- function(site_no){
 
 #' Construct probability plot using the Weibull plotting method
 #'
-#' @param vals A numeric vector with peak discharge values ... [more on what
-#'    this column of the data from readNWISpeak gives]
+#' @param vals A numeric vector of annual peak discharge values obtained from
+#'   the \code{readNWISpeak} function of the \code{dataRetrieval} package.
+#'
+#' @details
+#' The Weibull plotting method is commonly used in flood-frequency analysis.
+#' The basic procedure invovles ranking the values from highest to lowest and
+#' calculating an exceedence probability (\eqn{p = rank / (n + 1)}) where n
+#' is the total number of observations. The median annual flood (Q2) is the
+#' flow with a probability of 0.5.
+#'
+#' @references
+#' Rao, A.R. and Hamed, K.H. 2000. Flood Frequency Analysis. CRC Press: Boca Raton.
 #'
 #' @export
 construct_prob_plot <- function(vals){
@@ -77,7 +91,8 @@ construct_prob_plot <- function(vals){
 #' @param site_no Character vector with USGS gage IDs of stream gage sites to
 #'   pull.
 #' @param type Character string with the type of flood stage to be used. Can be
-#'   one of four options: "action", "flood", "moderate", and "major".
+#'   one of four options: "action", "flood", "moderate", and "major". Defaults
+#'   to "flood".
 #'
 #' @return Data frame of gage IDs and the corresponding NWS flood value, if
 #' available.
@@ -90,7 +105,7 @@ construct_prob_plot <- function(vals){
 #' va_nws <- find_nws(site_no = va_gages$site_no, type = "moderate")
 #'
 #' @export
-find_nws <- function(site_no, type) {
+find_nws <- function(site_no, type = "flood") {
 
   #check capitalization and append "_Q" to type
   type <- R.utils::capitalize(tolower(type))

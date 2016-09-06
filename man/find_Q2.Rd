@@ -16,13 +16,23 @@ A data frame with median flood values (Q2) and the number of years of
 }
 \description{
 This function will get annual maximum flow series for each USGS gage and
-compute median flood (Q2) to serve as flood threshold
+compute median flood (Q2) to serve as flood threshold. Peak flow data
+is obtained using the \code{readNWISpeak} function from the
+\code{dataRetrieval} package.
 }
 \examples{
 
 miami_gages <- gage_extract("12086", start_date = "2000-01-01",
                             end_date = "2009-12-31")
-miami_q2 <- find_q2(site_no = miami_gages$site_no)
+miami_q2 <- find_q2(site_no = miami_gages$site_no,
+                    start_date = "2000-01-01", end_date = "2009-12-31")
 
+va_gages <- get_county_cd("Virginia") \%>\%
+   get_gages(start_date = "2015-01-01", end_date = "2015-12-31")
+va_q2 <- find_q2(va_gages$site_no)
+
+}
+\seealso{
+\code{\link[dataRetrieval]{readNWISpeak}}
 }
 

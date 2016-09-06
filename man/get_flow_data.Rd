@@ -18,10 +18,9 @@ notation.}
 }
 \value{
 A dataframe with discharge data for each of the specified monitors.
-   This is a dataframe that typically
-   includes columns for the gage site number, date of each observation,
-   [fill in other common outputs-- X_PUBLISHED_00060_00003 and
-   X_PUBLISHED_00060_00003_cd].
+  This is a dataframe that includes columns for the gage site number, date of
+  each observation, and observed mean daily discharge (cubic feet per
+  second).
 }
 \description{
 Pulls all discharge data for the specified gage numbers and date range.
@@ -39,5 +38,8 @@ miami_flow_data <- get_gages("12086", start_date = "2000-01-01",
                    get_flow_data(start_date = "2000-01-01",
                                  end_date = "2000-01-31")
 
+}
+\seealso{
+\code{\link[dataRetrieval]{readNWISdv}}
 }
 

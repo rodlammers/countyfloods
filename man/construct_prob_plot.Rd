@@ -7,10 +7,20 @@
 construct_prob_plot(vals)
 }
 \arguments{
-\item{vals}{A numeric vector with peak discharge values ... [more on what
-this column of the data from readNWISpeak gives]}
+\item{vals}{A numeric vector of annual peak discharge values obtained from
+the \code{readNWISpeak} function of the \code{dataRetrieval} package.}
 }
 \description{
 Construct probability plot using the Weibull plotting method
+}
+\details{
+The Weibull plotting method is commonly used in flood-frequency analysis.
+The basic procedure invovles ranking the values from highest to lowest and
+calculating an exceedence probability (\eqn{p = rank / (n + 1)}) where n
+is the total number of observations. The median annual flood (Q2) is the
+flow with a probability of 0.5.
+}
+\references{
+Rao, A.R. and Hamed, K.H. 2000. Flood Frequency Analysis. CRC Press: Boca Raton.
 }
 
