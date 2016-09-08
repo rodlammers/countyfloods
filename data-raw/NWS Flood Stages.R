@@ -2,10 +2,12 @@ library(dataRetrieval)
 library(plyr)
 
 #How do I refer to this file if its saved as part of the package?
-setwd("C:/Users/rlammers/Documents/NWS Flood Stages")
+# BA: You can assume the package is working from the main package directory,
+# so best practice is to do relative file names from there (data-raw/filename)
+#setwd("C:/Users/rlammers/Documents/NWS Flood Stages")
 
-NWS_data <- read.table("NWS Flood Stages.txt", header = TRUE, sep = "\t")
-gage_no <- read.table("USGS-NWS Gages.txt", header = TRUE, sep = "\t",
+NWS_data <- read.table("data-raw/NWS Flood Stages.txt", header = TRUE, sep = "\t")
+gage_no <- read.table("data-raw/USGS-NWS Gages.txt", header = TRUE, sep = "\t",
                       colClasses = c("character", "character"))
 
 #remove NWS data without at least one "flood stage" metric
@@ -54,4 +56,4 @@ NWS_data2 <- NWS_data2[NWS_data2$test > 0, ]
 NWS_data3 <- NWS_data2[ ,-c(1, 2, 4, 10, 11, 17:23, 25)]
 names(NWS_data3)[14:17] <- c("Action_Q", "Flood_Q", "Moderate_Q", "Major_Q")
 
-write.table(NWS_data3, "NWS Flood Discharge Data.txt", col.names = TRUE, sep = "\t", row.names = FALSE)
+write.table(NWS_data3, "data-raw/NWS Flood Discharge Data.txt", col.names = TRUE, sep = "\t", row.names = FALSE)
