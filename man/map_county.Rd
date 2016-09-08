@@ -8,7 +8,9 @@ map_county(county_stats, category = "minor")
 }
 \arguments{
 \item{category}{Character string of the flood magnitude category to be used
-for mapping (one of "minor", "moderate", "major", or "extreme").}
+for mapping (one of "minor", "moderate", "major", or "extreme"). This
+parameter only works when mapping county-level, rather than gage-level,
+values.}
 }
 \value{
 A map of counties color coded by percentage of gages experiencing flooding.

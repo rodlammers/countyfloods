@@ -107,6 +107,12 @@ construct_prob_plot <- function(vals){
 #' @export
 find_nws <- function(site_no, type = "flood") {
 
+  #Check inputs and return error messages as necessary
+  if(!is.character(site_no)) stop("Input site_no must be a character")
+  type <- tolower(type)
+  if(type != "action" & type != "flood" & type != "moderate" &
+     type != "major") stop("type must be one of 'action', 'flood', 'moderate', or 'major'")
+
   #check capitalization and append "_Q" to type
   type <- R.utils::capitalize(tolower(type))
   type <- paste0(type, "_Q")

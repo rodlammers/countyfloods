@@ -4,11 +4,16 @@
 \alias{map_flood}
 \title{Function maps data, either by gage or by county}
 \usage{
-map_flood(flood_stats)
+map_flood(flood_stats, category = "minor")
 }
 \arguments{
 \item{flood_stats}{Data frame of flood analysis results, output of
 \code{run_flood} function.}
+
+\item{category}{Character string of the flood magnitude category to be used
+for mapping (one of "minor", "moderate", "major", or "extreme"). This
+parameter only works when mapping county-level, rather than gage-level,
+values.}
 }
 \value{
 A map of the state(s) analyzed showing counties and gages color coded

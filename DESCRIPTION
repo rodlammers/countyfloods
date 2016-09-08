@@ -12,7 +12,11 @@ Description: Quantifies United States flood impacts at the county level using
     creating county-level time series of flood status that can be more easily
     joined with county-level impact measurements, including health outcomes.
     This work was supported in part by grants from the National Institute of
-    Environmental Health Sciences (R00ES022631) and the Colorado Water Center.
+    Environmental Health Sciences (R00ES022631), the Colorado Water Center,
+    and the National Science Foundation, Integrative Graduate Education and
+    Research Traineeship (IGERT) Grant No. DGE-0966346 "I-WATER: Integrated
+    Water, Atmosphere, Ecosystems Education and Research Program" at
+    Colorado STate University.
 License: GPL-2
 LazyData: TRUE
 Depends:

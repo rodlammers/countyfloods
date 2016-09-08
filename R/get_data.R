@@ -28,6 +28,9 @@
 #' @export
 get_gages <- function(county_cd, start_date, end_date){
 
+  #Check inputs and return error messages as necessary
+  if(!is.character(county_cd)) stop("Input county_cd must be a character")
+
   #Get gages by county code. This serves two purposes: first, the whatNWISsites function
   #has a limit of 20 county codes so calling by county avoids this issues; second, this
   #allows for the county code to be stored with each gage number
@@ -112,11 +115,13 @@ gage_extract <- function(county_cd, start_date, end_date){
 #' @export
 get_flow_data <- function(gages_df, start_date, end_date){
 
+  #Check inputs and return error messages as necessary
+  if(!is.data.frame(gages_df)) stop("gage_df must be a data.frame")
+
   flow_data <- lapply(gages_df$site_no, function(x){
     dataRetrieval::readNWISdv(siteNumber = x, parameterCd = "00060",
                               startDate = start_date, endDate = end_date)
   })
-
 
   #remove stations with no discharge data
   omit <- sapply(flow_data, function(x) {length(x)})
@@ -165,7 +170,7 @@ get_county_cd <- function(state){
 
   #put all fips codes in single array, adding a leading zero if codes are only
   # 4 digits long. Also, ensure that each FIPS code only is output once.
-  fips_cd_array <- unique(sprintf("%05d",fips_cd$fips))
+  fips_cd_array <- unique(sprintf("%05d", fips_cd$fips))
 
   return(fips_cd_array)
 }

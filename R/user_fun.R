@@ -13,7 +13,7 @@
 #' @param end_date Character string with the end date, using "YYYY-MM-DD"
 #'   notation.
 #' @param threshold Character string of the flood threshold to be used in the
-#'   analysis (either "Q2" or "NWS")
+#'   analysis (either "Q2" or "NWS"). Defaults to "Q2".
 #' @param flood_type Character string of the defined flood type based on NWS
 #'   classifications (one of "action", "flood", "moderate", or "major")
 #' @param output Character string of output summary type (either "gage",
@@ -74,8 +74,20 @@
 #'                       output = "county")
 #'
 #' @export
-run_flood <- function(county_cd = NULL, state = NULL, start_date, end_date, threshold,
+run_flood <- function(county_cd = NULL, state = NULL, start_date, end_date, threshold = "Q2",
                       flood_type = "flood", output = "gage"){
+
+  #Check inputs and return error messages as necessary
+  if(!is.character(county_cd) & !is.null(county_cd)) stop("Input county_cd must be a character")
+  if(!is.character(state) & !is.null(state)) stop("Input state must be a character")
+  if(is.null(county_cd) & is.null(state)) stop("must specify either county_cd or state")
+  if(threshold != "Q2" & threshold != "NWS") stop("threshold must be set to either 'Q2' or 'NWS'")
+  flood_type <- tolower(flood_type)
+  if(flood_type != "action" & flood_type != "flood" & flood_type != "moderate" &
+     flood_type != "major") stop("flood_type must be one of 'action', 'flood', 'moderate', or 'major'")
+  output <- tolower(output)
+  if(output != "gage" & output != "county" &
+     output != "both") stop("output must be one of 'gage', 'county', or 'both'")
 
   #Determine if county codes or state name was provided. If state name given,
   #find all county codes in the state

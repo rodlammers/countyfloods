@@ -11,7 +11,13 @@
 #'   values.
 #'
 #' @return A map of the state(s) analyzed showing counties and gages color coded
-#'   based on flood magnitude, depending on the type of data in flood_stats.
+#'   based on flood magnitude, depending on the type of data in flood_stats. Gage
+#'   flood thresholds are "None" (flood_ratio < 1), "Minor" (flood_ratio < 1.5),
+#'   "Moderate" (flood_ratio < 2), "Major" (flood_ratio < 5), and "Extreme"
+#'   (flood_ratio > 5). For county aggregate maps, flood exposure is assessed based
+#'   on the percentage of gages in the county at or above a specified flood threshold.
+#'   Exposure categories include "Low" (0% - 20%), "Moderate" (20% - 40%), "Moderate-High"
+#'   (40% - 60%), "High" (60% - 80%), and "very High" (80% - 100%).
 #'
 #' @examples
 #' #Use Q2 as flood threshold and get get gage-level output
@@ -34,11 +40,11 @@ map_flood <- function(flood_stats, category = "minor") {
   #Check if flood_stats data is at the gage- or county-level and call
   #appropriate mapping function
   if (!is.data.frame(flood_stats)) {
-    output = "both"
+    output <- "both"
   }else if (names(flood_stats)[1] == "site_no") {
-    output = "gage"
+    output <- "gage"
   }else if (names(flood_stats)[1] == "county_cd") {
-    output = "county"
+    output <- "county"
   }
 
   if (output == "gage") {
@@ -69,7 +75,7 @@ map_gage <- function(flood_stats) {
 
   region <- as.character(unique(flood_stats$state))
 
-  counties <- ggplot2::map_data('county', region = region)
+  counties <- ggplot2::map_data("county", region = region)
   counties_sub <- subset(counties, subregion %in% flood_stats$county)
   ggplot2::ggplot(counties_sub, ggplot2::aes(x = long, y = lat, group = group)) +
     ggplot2::geom_polygon(fill = "gray95", color = "black") +
@@ -94,6 +100,11 @@ map_gage <- function(flood_stats) {
 #' @export
 map_county <- function(county_stats, category = "minor") {
 
+  #Check inputs and return error messages as necessary
+  category <- tolower(category)
+  if(category != "minor" & category != "moderate" & category != "major" &
+     category != "extreme") stop("Input category must be one of 'minor', moderate', 'major', or 'extreme'")
+
   colors <- c("#993404", "#D95F0E", "#FE9929", "#FED98E", "#FFFFD4")
   exposure_cat <- c("Very High", "High", "Moderate-High", "Moderate", "Low")
   names(colors) <- exposure_cat
@@ -115,7 +126,7 @@ map_county <- function(county_stats, category = "minor") {
 
   #Get all counties for states analyzed as well as the subset of counties with
   # actual data
-  counties <- ggplot2::map_data('county', region = region)
+  counties <- ggplot2::map_data("county", region = region)
   counties_sub <- subset(counties, subregion %in% county_stats$county)
 
   counties_sub$cat <- county_stats$cat[match(counties_sub$subregion,
