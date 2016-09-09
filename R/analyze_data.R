@@ -39,13 +39,14 @@
 #' @importFrom dplyr %>%
 #'
 #' @export
-flood_analysis <- function(flow_data, peaks, gages){
+flood_analysis <- function(flow_data, peaks, gages, county_cd, q2_val){
 
   #Add Q2 or NWS flood discharge values to flow_data data frame
   #Compute statistics for each gage using flood ratios
   flood_stats <- flow_data %>%
     dplyr::left_join(gages, by = "site_no") %>%
     dplyr::left_join(peaks, by = "site_no") %>%
+    dplyr::left_join(q2_val, by = "site_no") %>%
     dplyr::rename_(.dots = list(lat = "dec_lat_va", long = "dec_long_va")) %>%
     dplyr::mutate_(flood_ratio = ~ discharge / flood_val) %>%
     dplyr::group_by_(~ site_no) %>%
@@ -56,8 +57,21 @@ flood_analysis <- function(flow_data, peaks, gages){
                      flood_dur = ~ sum(flood_ratio > 1, na.rm = TRUE),
                      peak = ~ ifelse(sum(!is.na(flood_ratio) > 0),
                                    max(flood_ratio, na.rm = TRUE), NA),
-                     fips = ~ as.numeric(county_cd)) %>%
-    dplyr::left_join(maps::county.fips, by = "fips") %>%
+                     fips = ~ as.numeric(county_cd),
+                     num_missing = ~ sum(is.na(flood_ratio)),
+                     size = ~ dplyr::first(log10(q2))) %>%
+    dplyr::filter_(~ !is.na(peak))   #Remove NAs
+
+    #add any county_cd in input that has no gages
+    add_county_cd <- county_cd[!(county_cd %in% flood_stats$county_cd)]
+    if(length(add_county_cd) > 0) {
+      flood_stats <- dplyr::bind_rows(flood_stats,
+                                      data.frame(county_cd = add_county_cd,
+                                                fips = as.numeric(add_county_cd),
+                                                site_no = as.character(-1:(-length(add_county_cd)))))
+    }
+
+    flood_stats <- flood_stats %>% dplyr::left_join(maps::county.fips, by = "fips") %>%
     dplyr::select_(.dots = list("-fips")) %>%
     dplyr::mutate_(map_id = ~ polyname) %>%
     tidyr::separate_(col = "polyname", into = c("state", "county"), sep = ",") %>%
@@ -66,7 +80,6 @@ flood_analysis <- function(flow_data, peaks, gages){
                                  labels = c("None", "Minor", "Moderate",
                                             "Major", "Extreme"),
                                  include.lowest = TRUE, right = FALSE)) %>%
-    dplyr::filter_(~ !is.na(peak)) %>%    #Remove NAs
     dplyr::ungroup()
 
   return(flood_stats)
@@ -109,32 +122,87 @@ flood_analysis <- function(flow_data, peaks, gages){
 #' @importFrom dplyr %>%
 #'
 #' @export
-county_aggregates <- function(flood_stats){
+county_aggregates <- function(flood_stats, county_cd){
 
   county_stats <- flood_stats %>%
     dplyr::group_by_(~ county_cd) %>%
     dplyr::summarize_(county = ~ dplyr::first(county),
                       state = ~ dplyr::first(state),
                       num_gage = ~ n(),
-                      max_peak = ~ max(peak),
-                      avg_peak = ~ mean(peak),
-                      minor = ~ round(100 * sum((flood %in% c("Minor",
+                      max_peak = ~ max(peak, na.rm = TRUE),
+                      avg_peak = ~ mean(peak, na.rm = TRUE),
+                      minor = ~ dplyr::if_else(is.na(max_peak), -1,
+                                               round(100 * sum((flood %in% c("Minor",
                                                               "Moderate",
                                                               "Major",
                                                               "Extreme")) /
-                                                  num_gage), 1),
-                      moderate = ~ round(100 * sum((flood %in% c("Moderate",
+                                                  num_gage), 1)),
+                      moderate = ~ dplyr::if_else(is.na(max_peak), -1,
+                                                  round(100 * sum((flood %in% c("Moderate",
                                                                  "Major",
                                                                  "Extreme")) /
-                                                     num_gage), 1),
-                      major = ~ round(100 * sum((flood %in% c("Major",
+                                                     num_gage), 1)),
+                      major = ~ dplyr::if_else(is.na(max_peak), -1,
+                                               round(100 * sum((flood %in% c("Major",
                                                               "Extreme")) /
-                                                  num_gage), 1),
-                      extreme = ~ round(100 * sum((flood %in% c("Extreme")) /
-                                                    num_gage), 1),
-                      max_dur = ~ max(flood_dur),
-                      avg_dur = ~ mean(flood_dur))
+                                                  num_gage), 1)),
+                      extreme = ~ dplyr::if_else(is.na(max_peak), -1,
+                                                 round(100 * sum((flood %in% c("Extreme")) /
+                                                    num_gage), 1)),
+                      max_dur = ~ max(flood_dur, na.rm = TRUE),
+                      avg_dur = ~ mean(flood_dur, na.rm = TRUE))
 
+
+  #If no data for gage, change values of minor through extreme to NA
   return(county_stats)
 }
 
+#This function will analyze floods across a long time period, returning
+#useful summary results
+time_series_analysis <- function(flow_data, peaks, gages, county_cd, q2_val){
+
+  #Add Q2 or NWS flood discharge values to flow_data data frame
+  #Compute statistics for each gage using flood ratios
+  flood_series <- flow_data %>%
+    dplyr::left_join(gages, by = "site_no") %>%
+    dplyr::left_join(peaks, by = "site_no") %>%
+    dplyr::left_join(q2_val, by = "site_no") %>%
+    dplyr::rename_(.dots = list(lat = "dec_lat_va", long = "dec_long_va")) %>%
+    dplyr::mutate_(flood_ratio = ~ discharge / flood_val) %>%
+    dplyr::filter_(~ !is.na(flood_val)) %>%
+    dplyr::filter_(~ flood_ratio > 1)
+#     dplyr::group_by_(~ site_no) %>%
+#     dplyr::summarize_(county_cd = ~ dplyr::first(county_cd),
+#                       lat = ~ dplyr::first(lat),
+#                       long = ~ dplyr::first(long),
+#                       avg_peak = ~ mean(flood_ratio, na.rm = TRUE),
+#                       flood_dur = ~ sum(flood_ratio > 1, na.rm = TRUE),
+#                       peak = ~ ifelse(sum(!is.na(flood_ratio) > 0),
+#                                       max(flood_ratio, na.rm = TRUE), NA),
+#                       fips = ~ as.numeric(county_cd),
+#                       num_missing = ~ sum(is.na(flood_ratio)),
+#                       size = ~ dplyr::first(log10(q2))) %>%
+#     dplyr::filter_(~ !is.na(peak))   #Remove NAs
+#
+#   #add any county_cd in input that has no gages
+#   add_county_cd <- county_cd[!(county_cd %in% flood_stats$county_cd)]
+#   if(length(add_county_cd) > 0) {
+#     flood_stats <- dplyr::bind_rows(flood_stats,
+#                                     data.frame(county_cd = add_county_cd,
+#                                                fips = as.numeric(add_county_cd),
+#                                                site_no = as.character(-1:(-length(add_county_cd)))))
+#   }
+#
+#   flood_stats <- flood_stats %>% dplyr::left_join(maps::county.fips, by = "fips") %>%
+#     dplyr::select_(.dots = list("-fips")) %>%
+#     dplyr::mutate_(map_id = ~ polyname) %>%
+#     tidyr::separate_(col = "polyname", into = c("state", "county"), sep = ",") %>%
+#     dplyr::arrange_(~ dplyr::desc(peak)) %>%         #sort flood stats by magnitude
+#     dplyr::mutate_(flood = ~ cut(peak, breaks = c(0, 1, 1.5, 2, 5, 1000),
+#                                  labels = c("None", "Minor", "Moderate",
+#                                             "Major", "Extreme"),
+#                                  include.lowest = TRUE, right = FALSE)) %>%
+#     dplyr::ungroup()
+
+  return(flood_series)
+}

@@ -54,7 +54,7 @@ map_flood <- function(flood_stats, category = "minor") {
   }else if (output == "both") {
     gage_map <- map_gage(flood_stats[[1]])
     county_map <- map_county(flood_stats[[2]], category = category)
-    return(list(gage_map = gage_map, county_map = county_map))
+    return(list(gage_map, county_map))
   }
 }
 
@@ -76,13 +76,16 @@ map_gage <- function(flood_stats) {
   region <- as.character(unique(flood_stats$state))
 
   counties <- ggplot2::map_data("county", region = region)
-  counties_sub <- subset(counties, subregion %in% flood_stats$county)
+  counties_sub <- subset(counties, subregion %in% flood_stats$county[!is.na(flood_stats$lat)])
+  counties_sub_ND <- subset(counties, subregion %in% flood_stats$county[is.na(flood_stats$lat)])
   ggplot2::ggplot(counties_sub, ggplot2::aes(x = long, y = lat, group = group)) +
     ggplot2::geom_polygon(fill = "gray95", color = "black") +
     ggplot2::geom_polygon(data = counties, ggplot2::aes(x = long, y = lat, group = group),
                           fill = NA, color = "black") +
-    ggplot2::geom_point(data = flood_stats, ggplot2::aes(x = long, y = lat, group = NA, fill = flood),
-                        size = 4, alpha = 0.8, pch = 21, show.legend = TRUE) +
+    ggplot2::geom_polygon(data = counties_sub_ND, ggplot2::aes(x = long, y = lat, group = group),
+                          fill = "gray60", color = "black") +
+    ggplot2::geom_point(data = flood_stats, ggplot2::aes(x = long, y = lat, group = NA, fill = flood,
+                        size = size), alpha = 0.8, pch = 21, show.legend = TRUE) +
     ggplot2::scale_fill_manual(values = colors) +
     ggplot2::theme_void()
 }
@@ -105,8 +108,8 @@ map_county <- function(county_stats, category = "minor") {
   if(category != "minor" & category != "moderate" & category != "major" &
      category != "extreme") stop("Input category must be one of 'minor', moderate', 'major', or 'extreme'")
 
-  colors <- c("#993404", "#D95F0E", "#FE9929", "#FED98E", "#FFFFD4")
-  exposure_cat <- c("Very High", "High", "Moderate-High", "Moderate", "Low")
+  colors <- c("#993404", "#D95F0E", "#FE9929", "#FED98E", "#FFFFD4", "#bfbfbf")
+  exposure_cat <- c("Very High", "High", "Moderate-High", "Moderate", "Low", "No Data")
   names(colors) <- exposure_cat
 
   #Set flood exposure "categories" based on percentage of flooded gages and the
@@ -117,8 +120,8 @@ map_county <- function(county_stats, category = "minor") {
     tidyr::gather_(key_col = "key", value_col = "value",
                   gather_cols = c("minor", "moderate", "major", "extreme")) %>%
     dplyr::filter_(~ key == category) %>%
-    dplyr::mutate_(cat = ~ cut(value, breaks = c(0, 20, 40, 60, 80, 100),
-                            labels = c("Low", "Moderate", "Moderate-High",
+    dplyr::mutate_(cat = ~ cut(value, breaks = c(-1, 0, 20, 40, 60, 80, 100),
+                            labels = c("No Data", "Low", "Moderate", "Moderate-High",
                                        "High", "Very High"),
                             include.lowest = TRUE, right = FALSE))
 

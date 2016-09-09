@@ -47,6 +47,7 @@ get_gages <- function(county_cd, start_date, end_date){
     dplyr::select_(.dots = list(quote(-queryTime))) %>%
     dplyr::distinct_()
 
+
   return(gages_df)
 }
 
