@@ -4,7 +4,7 @@
 \alias{flood_analysis}
 \title{Compute flood statistics}
 \usage{
-flood_analysis(flow_data, peaks, gages)
+flood_analysis(flow_data, peaks, gages, county_cd, q2_val)
 }
 \arguments{
 \item{flow_data}{A data frame with discharge data for each USGS gage found
@@ -16,20 +16,27 @@ either the \code{find_Q2} or \code{find_NWS} function.}
 \item{gages}{A data frame of all USGS gages and metadata obtained from the
 \code{get_gages} function. This input is used to add lat/long and county
 codes to the summarized output.}
+
+\item{county_cd}{Character vector with the county FIPS code(s)}
+
+\item{q2_val}{A data frame with values of the median annual flood to be used
+to compare relative sizes of streams at gage locations}
 }
 \value{
 A data frame with the following columns:
 \tabular{lll}{
 Name \tab Type \tab Description\cr
 site_no \tab character \tab USGS gage ID\cr
+county_cd \tab character \tab FIPS code of gage county location\cr
+lat \tab numeric \tab Gage latitude\cr
+long \tab numeric \tab Gage longitude\cr
 avg_peak \tab numeric \tab Mean flood ratio for date range (discharge/flood threshold)\cr
 flood_dur \tab numeric \tab Number of days in date range discharge above flood threshold\cr
 peak \tab numeric \tab Maximum value of flood ratio for date range (discharge/flood threshold)\cr
-lat \tab numeric \tab Gage latitude\cr
-long \tab numeric \tab Gage longitude\cr
-county_cd \tab character \tab FIPS code of gage county location\cr
-county \tab character \tab County name\cr
+num_missing \tab numeric \tab Number of days with missing discharge data from input date range\cr
+size \tab numeric \tab Metric of the relative size of the river (logarithm of median annual flood)\cr
 state \tab character \tab State name\cr
+county \tab character \tab County name\cr
 flood \tab character \tab Flood magnitude category based on peak
 }
 }

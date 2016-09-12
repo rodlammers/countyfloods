@@ -17,7 +17,13 @@ values.}
 }
 \value{
 A map of the state(s) analyzed showing counties and gages color coded
-  based on flood magnitude, depending on the type of data in flood_stats.
+  based on flood magnitude, depending on the type of data in flood_stats. Gage
+  flood thresholds are "None" (flood_ratio < 1), "Minor" (flood_ratio < 1.5),
+  "Moderate" (flood_ratio < 2), "Major" (flood_ratio < 5), and "Extreme"
+  (flood_ratio > 5). For county aggregate maps, flood exposure is assessed based
+  on the percentage of gages in the county at or above a specified flood threshold.
+  Exposure categories include "Low" (0% - 20%), "Moderate" (20% - 40%), "Moderate-High"
+  (40% - 60%), "High" (60% - 80%), and "very High" (80% - 100%).
 }
 \description{
 Displays a state or multi-state map summarizing flood analysis results either

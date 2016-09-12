@@ -142,3 +142,75 @@ map_county <- function(county_stats, category = "minor") {
     ggplot2::scale_fill_manual(values = colors) +
     ggplot2::theme_void()
 }
+
+
+
+#' Function plots time series data by county
+#'
+#' Displays four time series bar charts per county displaying the number of
+#' gages with flooding, maximum flood ratio, average flood ratio, and the
+#' percent of gages above a specified flood threshold.
+#'
+#' @param county_series Data frame of flood time series results by county,
+#'   output of \code{time_series_flood} function.
+#' @param category Character string of the flood magnitude category to be used
+#'   for mapping (one of "minor", "moderate", "major", or "extreme").
+#' @param start_date Character string of start date for x-axis of plots. If not
+#'   specified, defaults to the earliest observed flood in the data.
+#' @param end_date Character string of end date for x-axis of plots. If not
+#'   specified, defaults to the latest observed flood in the data.
+#'
+#' @return Four time series bar charts per county displaying the number of
+#' gages with flooding, maximum flood ratio, average flood ratio, and the
+#' percent of gages above a specified flood threshold.
+#'
+#' @examples
+#' #Use Q2 as flood threshold
+#' va_time_series <- time_series_flood(state = "Virginia", start_date = "2015-01-01",
+#'                       end_date = "2015-12-31", threshold = "Q2")
+#'
+#' #Map results
+#' time_series_plot(va_time_series[[2]])
+#'
+#' @export
+time_series_plot <- function(county_series, category = "moderate",
+                             start_date = NULL, end_date = NULL) {
+
+  if(is.null(start_date)) {start_date <- min(county_series$date)}
+  if(is.null(end_date)) {end_date <- max(county_series$date)}
+
+  plyr::ddply(county_series, "county", function(x) {
+
+  p1 <- ggplot2::ggplot(data = x, ggplot2::aes(x = date, y = num_gage)) +
+    ggplot2::geom_bar(stat = "identity") +
+    ggplot2::xlim(start_date, end_date) +
+    ggplot2::ylab("Gages") +
+    ggplot2::xlab("Date") +
+    ggplot2::ggtitle(substitute(paste("Number of gages with a flood (", county, " County)"),
+                                list(county = R.utils::capitalize(unique(x$county)))))
+
+  p2 <- ggplot2::ggplot(data = x, ggplot2::aes(x = date, y = max_peak)) +
+    ggplot2::geom_bar(stat = "identity") +
+    ggplot2::xlim(start_date, end_date) +
+    ggplot2::ylab("Flood Ratio") +
+    ggplot2::xlab("Date") +
+    ggplot2::ggtitle("Maximum flood ratio")
+
+  p3 <- ggplot2::ggplot(data = x, ggplot2::aes(x = date, y = avg_peak)) +
+    ggplot2::geom_bar(stat = "identity") +
+    ggplot2::xlim(start_date, end_date) +
+    ggplot2::ylab("Flood Ratio") +
+    ggplot2::xlab("Date") +
+    ggplot2::ggtitle("Average flood ratio")
+
+  p4 <- ggplot2::ggplot(data = x, ggplot2::aes(x = date, y = x[ ,tolower(category)])) +
+    ggplot2::geom_bar(stat = "identity") +
+    ggplot2::xlim(start_date, end_date) +
+    ggplot2::ylab("% Larger") +
+    ggplot2::xlab("Date") +
+    ggplot2::ggtitle("Percent of gages above flood threshold")
+
+  gridExtra::grid.arrange(p1, p2, p3, p4, ncol = 1)
+  })
+
+}

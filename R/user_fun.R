@@ -183,7 +183,80 @@ run_flood <- function(county_cd = NULL, state = NULL, start_date, end_date, thre
 
 #Right now this returns any dates within the specified range where a flood occured at a gage.
 #This output can be better summarized by both gage and county.
-time_series_flood <- function(county_cd, start_date, end_date, threshold = "Q2", flood_type = "flood") {
+
+#' Return a time series of flood metrics by county codes or state names
+#'
+#' Access USGS databases to retrieve gages and flow data for the specified
+#' counties/states or county FIPS codes and the specified date ranges. Flooding
+#' at these gage locations are assessed by one of two metrics. Data on timing
+#' and magnitude of flooding will be returned at the gage level or the county
+#' level.
+#'
+#' @param county_cd Character vector with the county FIPS code(s)
+#' @param state Character vector of state names. Used to obtain county FIPS
+#'   codes if county_cd is NULL
+#' @param start_date Character string with the starting date, using "YYYY-MM-DD"
+#'   notation.
+#' @param end_date Character string with the end date, using "YYYY-MM-DD"
+#'   notation.
+#' @param threshold Character string of the flood threshold to be used in the
+#'   analysis (either "Q2" or "NWS"). Defaults to "Q2".
+#' @param flood_type Character string of the defined flood type based on NWS
+#'   classifications (one of "action", "flood", "moderate", or "major")
+#'
+#' @return A list with two data frames, summarizing the results by gage and by county:
+#'
+#' Gage:
+#' \tabular{lll}{
+#' Name \tab Type \tab Description\cr
+#' site_no \tab character \tab USGS gage ID\cr
+#' date \tab date \tab Date of observation\cr
+#' discharge \tab numeric \tab Observed mean daily discharge (cubic feet per second)\cr
+#' lat \tab numeric \tab Gage latitude\cr
+#' long \tab numeric \tab Gage longitude\cr
+#' county_cd \tab character \tab FIPS code of gage county location\cr
+#' size \tab numeric \tab Metric of the relative size of the river (logarithm of median annual flood)\cr
+#' flood_ratio \tab numeric \tab Metric of the observed discharge divided by the defined flood threshold\cr
+#' state \tab character \tab State name\cr
+#' county \tab character \tab County name\cr
+#' flood \tab character \tab Flood magnitude category based on peak
+#' }
+#'
+#' County:
+#' \tabular{lll}{
+#' Name \tab Type \tab Description\cr
+#' date \tab date \tab Date of observation\cr
+#' county \tab character \tab County name\cr
+#' state \tab character \tab State name\cr
+#' num_gages \tab numeric \tab Number of analyzed gages in county\cr
+#' max_peak \tab numeric \tab Maximum observed flood ratio\cr
+#' avg_peak \tab numeric \tab Average flood ratio among county gages\cr
+#' minor \tab numeric \tab Percentage of gages at or above "minor" flood class (flood ratio > 1)\cr
+#' moderate \tab numeric \tab Percentage of gages at or above "moderate" flood class (flood ratio > 1.5)\cr
+#' major \tab numeric \tab Percentage of gages at or above "major" flood class (flood ratio > 2)\cr
+#' extreme \tab numeric \tab Percentage of gages at or above "extreme" flood class (flood ratio > 5)\cr
+#' }
+#'
+#' @examples
+#' #Use Q2 as flood threshold
+#' va_time_series <- time_series_flood(state = "Virginia", start_date = "2015-01-01",
+#'                       end_date = "2015-12-31", threshold = "Q2")
+#'
+#' #Use NWS flood thresholds
+#' va_time_series <- time_series_flood(state = "Virginia", start_date = "2015-01-01",
+#'                       end_date = "2015-12-31", threshold = "NWS",
+#'                       flood_type = "action")
+#'
+#' @export
+time_series_flood <- function(county_cd = NULL, state = NULL, start_date, end_date,
+                              threshold = "Q2", flood_type = "flood") {
+
+  #Determine if county codes or state name was provided. If state name given,
+  #find all county codes in the state
+  if (is.null(county_cd) & !is.null(state)) {
+    county_cd <- get_county_cd(state)
+  }
+
   #get gages
   gages <- get_gages(county_cd = county_cd, start_date = start_date, end_date = end_date)
 
@@ -197,12 +270,11 @@ time_series_flood <- function(county_cd, start_date, end_date, threshold = "Q2",
   q2_val <- dplyr::rename_(q2_val, .dots = list(q2 = "flood_val"))
 
   gages <- dplyr::filter_(gages, ~ site_no %in% q2_val$site_no)
+
   #get flow data
   flow_data <- get_flow_data(gages, start_date = start_date, end_date = end_date)
 
-
-
-  #get flood stats by gage
+  #get flood stats
   flood_stats <- time_series_analysis(flow_data = flow_data, peaks = peaks, gages = gages,
                                 county_cd = county_cd, q2_val = q2_val)
 

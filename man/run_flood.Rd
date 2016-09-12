@@ -4,8 +4,8 @@
 \alias{run_flood}
 \title{Return flood metrics by county codes or state names}
 \usage{
-run_flood(county_cd = NULL, state = NULL, start_date, end_date, threshold,
-  flood_type = "flood", output = "gage")
+run_flood(county_cd = NULL, state = NULL, start_date, end_date,
+  threshold = "Q2", flood_type = "flood", output = "both")
 }
 \arguments{
 \item{county_cd}{Character vector with the county FIPS code(s)}
@@ -20,13 +20,13 @@ notation.}
 notation.}
 
 \item{threshold}{Character string of the flood threshold to be used in the
-analysis (either "Q2" or "NWS")}
+analysis (either "Q2" or "NWS"). Defaults to "Q2".}
 
 \item{flood_type}{Character string of the defined flood type based on NWS
 classifications (one of "action", "flood", "moderate", or "major")}
 
 \item{output}{Character string of output summary type (either "gage",
-"county", or "both"). Defaults to "gage".}
+"county", or "both"). Defaults to "both".}
 }
 \value{
 A data frame with output at either the gage or county level,
@@ -42,6 +42,8 @@ A data frame with output at either the gage or county level,
      discharge above flood threshold\cr
   peak \tab numeric \tab Maximum value of flood ratio for date
      range (discharge/flood threshold)\cr
+  num_missing \tab numeric \tab Number of days in given date
+     range with no discharge data at that gage\cr
   lat \tab numeric \tab Gage latitude\cr
   long \tab numeric \tab Gage longitude\cr
   county_cd \tab character \tab FIPS code of gage county location\cr
@@ -70,6 +72,8 @@ A data frame with output at either the gage or county level,
   avg_dur \tab numeric \tab Average flood duration in county }
 
 If output = "both" a list containing both data frames is returned.
+In both cases, if data in counties were requested but not avaialable,
+these counties are included as additional rows with data values of NA.
 }
 \description{
 Access USGS databases to retrieve gages and flow data for the specified

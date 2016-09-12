@@ -4,7 +4,7 @@
 \alias{county_aggregates}
 \title{Get county level output}
 \usage{
-county_aggregates(flood_stats)
+county_aggregates(flood_stats, county_cd)
 }
 \arguments{
 \item{flood_stats}{Data frame of gage-level output from \code{flood_analysis}

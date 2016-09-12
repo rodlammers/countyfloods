@@ -4,7 +4,10 @@ end_date <- as.Date("2013-09-30", format = "%Y-%m-%d")
 county_cd <- c("08013", "08031", "08069", "08001", "08059", "08123")
 
 test <- run_flood(county_cd = county_cd, start_date = start_date,
-                  end_date = end_date, threshold = "Q2", output = "gage")
+                  end_date = end_date, threshold = "Q2", output = "both")
+test[[1]]
+test[[2]]
+
 map_flood(test)
 
 #South Carolina Floods - October 2015
@@ -58,8 +61,17 @@ input_df <- data.frame(county_cd = county_cd, start_date = start_date, end_date 
 str(input)
 
 #Time series
-county_cd <- "12086"
-start_date <- "2000-01-01"
-end_date <- "2010-01-01"
+county_cd <- c("08069", "08013")
+start_date <- "2010-01-01"
+end_date <- "2014-01-01"
 test <- time_series_flood(county_cd = county_cd, start_date = start_date, end_date = end_date)
+gages <- test[[1]]
+county <- test[[2]]
+
+time_series_plot(county)
+
+va_time_series <- time_series_flood(state = "Virginia", start_date = "2015-01-01",
+                      end_date = "2015-12-31", threshold = "NWS",
+                      flood_type = "action")
+time_series_plot(va_time_series[[2]])
 
