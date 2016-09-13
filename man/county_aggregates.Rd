@@ -26,6 +26,10 @@ extreme \tab numeric \tab Percentage of gages at or above "extreme" flood class 
 max_dur \tab numeric \tab Maximum flood duration in county\cr
 avg_dur \tab numeric \tab Average flood duration in county
 }
+
+If threshold = "NWS", the columns "minor", "moderate", "major", and "extreme"
+are replaced with two columns: "no_flood" and "yes_flood" which show the
+percentage of gages in the county with or without flooding.
 }
 \description{
 Function aggregates gage-level output into county-level output

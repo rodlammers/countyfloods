@@ -61,7 +61,9 @@ map_flood <- function(flood_stats, category = "minor") {
 #' Maps flood data by gage
 #'
 #' Creates a state level map of flood analysis output by USGS gage. Gages are
-#' color coded based on maximum flood magnitude.
+#' color coded based on maximum flood magnitude (for flood threshold = "Q2").
+#' If the flood threshold is "NWS", points are binary coded based on flood
+#' occurrence (e.g. yes/no).
 #'
 #' @inheritParams map_flood
 #'
@@ -70,8 +72,13 @@ map_flood <- function(flood_stats, category = "minor") {
 #' @export
 map_gage <- function(flood_stats) {
 
-  colors <- c("#993404", "#D95F0E", "#FE9929", "#FED98E", "#FFFFD4")
-  names(colors) <- c("Extreme", "Major", "Moderate", "Minor", "None")
+  if (dplyr::first(flood_stats$flood) == "No Flood" | dplyr::first(flood_stats$flood) == "Flood"){
+    colors <- colors <- c("#993404", "#FFFFFF")
+    names(colors) <- c("Flood", "No Flood")
+  } else {
+    colors <- c("#993404", "#D95F0E", "#FE9929", "#FED98E", "#FFFFFF")
+    names(colors) <- c("Extreme", "Major", "Moderate", "Minor", "None")
+  }
 
   region <- as.character(unique(flood_stats$state))
 
@@ -114,16 +121,29 @@ map_county <- function(county_stats, category = "minor") {
 
   #Set flood exposure "categories" based on percentage of flooded gages and the
   #user-defined metric (e.g. minor, major, extreme flooding)
-  county_stats <- county_stats %>%
-    dplyr::select_(.dots = list("county", "state", "minor",
-                                "moderate", "major", "extreme")) %>%
-    tidyr::gather_(key_col = "key", value_col = "value",
-                  gather_cols = c("minor", "moderate", "major", "extreme")) %>%
-    dplyr::filter_(~ key == category) %>%
-    dplyr::mutate_(cat = ~ cut(value, breaks = c(-1, 0, 20, 40, 60, 80, 100),
-                            labels = c("No Data", "Low", "Moderate", "Moderate-High",
-                                       "High", "Very High"),
-                            include.lowest = TRUE, right = FALSE))
+  if ("no_flood" %in% colnames(county_stats)){
+    county_stats <- county_stats %>%
+      dplyr::select_(.dots = list("county", "state", "no_flood",
+                                  "yes_flood")) %>%
+      tidyr::gather_(key_col = "key", value_col = "value",
+                     gather_cols = c("no_flood", "yes_flood")) %>%
+      dplyr::filter_(~ key == "yes_flood") %>%
+      dplyr::mutate_(cat = ~ cut(value, breaks = c(-1, 0, 20, 40, 60, 80, 100),
+                                 labels = c("No Data", "Low", "Moderate", "Moderate-High",
+                                            "High", "Very High"),
+                                 include.lowest = TRUE, right = FALSE))
+  }else {
+    county_stats <- county_stats %>%
+      dplyr::select_(.dots = list("county", "state", "minor",
+                                  "moderate", "major", "extreme")) %>%
+      tidyr::gather_(key_col = "key", value_col = "value",
+                    gather_cols = c("minor", "moderate", "major", "extreme")) %>%
+      dplyr::filter_(~ key == category) %>%
+      dplyr::mutate_(cat = ~ cut(value, breaks = c(-1, 0, 20, 40, 60, 80, 100),
+                              labels = c("No Data", "Low", "Moderate", "Moderate-High",
+                                         "High", "Very High"),
+                              include.lowest = TRUE, right = FALSE))
+  }
 
   region <- as.character(unique(county_stats$state))
 
@@ -142,8 +162,6 @@ map_county <- function(county_stats, category = "minor") {
     ggplot2::scale_fill_manual(values = colors) +
     ggplot2::theme_void()
 }
-
-
 
 #' Function plots time series data by county
 #'
@@ -178,6 +196,10 @@ time_series_plot <- function(county_series, category = "moderate",
 
   if(is.null(start_date)) {start_date <- min(county_series$date)}
   if(is.null(end_date)) {end_date <- max(county_series$date)}
+
+  if ("no_flood" %in% colnames(county_series)){
+    category = "yes_flood"
+  }
 
   plyr::ddply(county_series, "county", function(x) {
 

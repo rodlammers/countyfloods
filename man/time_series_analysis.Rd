@@ -4,7 +4,7 @@
 \alias{time_series_analysis}
 \title{Get time series output}
 \usage{
-time_series_analysis(flow_data, peaks, gages, county_cd, q2_val)
+time_series_analysis(flow_data, peaks, gages, county_cd, q2_val, threshold)
 }
 \arguments{
 \item{flow_data}{A data frame with discharge data for each USGS gage found
@@ -56,6 +56,10 @@ moderate \tab numeric \tab Percentage of gages at or above "moderate" flood clas
 major \tab numeric \tab Percentage of gages at or above "major" flood class (flood ratio > 2)\cr
 extreme \tab numeric \tab Percentage of gages at or above "extreme" flood class (flood ratio > 5)\cr
 }
+
+If threshold = "NWS", the columns "minor", "moderate", "major", and "extreme"
+are replaced with two columns: "no_flood" and "yes_flood" which show the
+percentage of gages in the county with or without flooding.
 }
 \description{
 Function takes flow data and summarizes flood occurrence through time at

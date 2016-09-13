@@ -32,8 +32,6 @@ test <- run_flood(state = state, start_date = start_date, end_date = end_date,
 gage_output <- test[[1]]
 county_output <- test[[2]]
 
-map_flood(county_output)
-map_flood(gage_output)
 map_flood(test)
 
 
@@ -41,37 +39,51 @@ map_flood(test)
 va_floods <- run_flood(state = "Virginia", start_date = "2015-01-01",
                       end_date = "2015-12-31", threshold = "Q2", output = "gage")
 map_flood(va_floods)
+
 va_floods <- run_flood(state = "Virginia", start_date = "2015-01-01",
                       end_date = "2015-12-31", threshold = "NWS", flood_type = "action",
-                      output = "county")
+                      output = "both")
 map_flood(va_floods)
 
-miami_flow_data <- get_gages("12086", start_date = "2000-01-01",
-                                end_date = "2009-12-31") %>%
-                   get_flow_data(start_date = "2000-01-01",
-                                 end_date = "2000-01-31")
-
 #Input data frame of county_cds and date ranges
-county_cd <- rep("12086", 10)
-start_date <- c("2000-06-01", "2001-06-01", "2002-06-01", "2003-06-01", "2004-06-01",
-                "2005-06-01", "2006-06-01", "2007-06-01", "2008-06-01", "2009-06-01")
-end_date <- c("2000-06-30", "2001-06-30", "2002-06-30", "2003-06-30", "2004-06-30",
-              "2005-06-30", "2006-06-30", "2007-06-30", "2008-06-30", "2009-06-30")
+county_cd <- c(rep("08069", 10), rep("08013", 10))
+start_date <- rep(c("2000-06-01", "2001-06-01", "2002-06-01", "2003-06-01", "2004-06-01",
+                "2005-06-01", "2006-06-01", "2007-06-01", "2008-06-01", "2009-06-01"), 2)
+end_date <- rep(c("2000-06-30", "2001-06-30", "2002-06-30", "2003-06-30", "2004-06-30",
+              "2005-06-30", "2006-06-30", "2007-06-30", "2008-06-30", "2009-06-30"), 2)
 input_df <- data.frame(county_cd = county_cd, start_date = start_date, end_date = end_date, stringsAsFactors = FALSE)
-str(input)
+
+test <- long_term_flood(input_df = input_df)
+gage <- test[[1]]
+county <- test[[2]]
+map_flood(county)
+
+county_cd <- c(rep("51013", 5), rep("51107", 5), rep("51059", 5))
+start_date <- rep(c("2010-04-01", "2011-04-01", "2012-04-01", "2013-04-01", "2014-04-01"), 3)
+end_date <- rep(c("2010-04-30", "2011-04-30", "2012-04-30", "2013-04-30", "2014-04-30"), 3)
+input_df <- data.frame(county_cd = county_cd, start_date = start_date, end_date = end_date, stringsAsFactors = FALSE)
+
+#With default values
+VA_floods <- long_term_flood(input_df)
+
+#Using NWS values
+VA_floods <- long_term_flood(input_df, threshold = "NWS")
+
 
 #Time series
 county_cd <- c("08069", "08013")
 start_date <- "2010-01-01"
 end_date <- "2014-01-01"
-test <- time_series_flood(county_cd = county_cd, start_date = start_date, end_date = end_date)
+test <- time_series_flood(county_cd = county_cd, start_date = start_date, end_date = end_date, threshold = "NWS")
 gages <- test[[1]]
 county <- test[[2]]
 
 time_series_plot(county)
 
-va_time_series <- time_series_flood(state = "Virginia", start_date = "2015-01-01",
+va_time_series <- time_series_flood(county_cd = c("51013", "51107", "51059"), start_date = "2010-01-01",
                       end_date = "2015-12-31", threshold = "NWS",
                       flood_type = "action")
+gage <- va_time_series[[1]]
+county <- va_time_series[[2]]
 time_series_plot(va_time_series[[2]])
 

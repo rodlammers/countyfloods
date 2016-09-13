@@ -58,6 +58,10 @@ moderate \tab numeric \tab Percentage of gages at or above "moderate" flood clas
 major \tab numeric \tab Percentage of gages at or above "major" flood class (flood ratio > 2)\cr
 extreme \tab numeric \tab Percentage of gages at or above "extreme" flood class (flood ratio > 5)\cr
 }
+
+If threshold = "NWS", the columns "minor", "moderate", "major", and "extreme"
+are replaced with two columns: "no_flood" and "yes_flood" which show the
+percentage of gages in the county with or without flooding.
 }
 \description{
 Access USGS databases to retrieve gages and flow data for the specified

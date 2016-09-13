@@ -4,7 +4,7 @@
 \alias{flood_analysis}
 \title{Compute flood statistics}
 \usage{
-flood_analysis(flow_data, peaks, gages, county_cd, q2_val)
+flood_analysis(flow_data, peaks, gages, county_cd, q2_val, threshold)
 }
 \arguments{
 \item{flow_data}{A data frame with discharge data for each USGS gage found
@@ -21,6 +21,10 @@ codes to the summarized output.}
 
 \item{q2_val}{A data frame with values of the median annual flood to be used
 to compare relative sizes of streams at gage locations}
+
+\item{threshold}{Character string of the flood threshold to be used in the
+analysis (either "Q2" or "NWS"). Used to determine which type of summary
+statistics to compute.}
 }
 \value{
 A data frame with the following columns:
@@ -32,7 +36,7 @@ lat \tab numeric \tab Gage latitude\cr
 long \tab numeric \tab Gage longitude\cr
 avg_peak \tab numeric \tab Mean flood ratio for date range (discharge/flood threshold)\cr
 flood_dur \tab numeric \tab Number of days in date range discharge above flood threshold\cr
-peak \tab numeric \tab Maximum value of flood ratio for date range (discharge/flood threshold)\cr
+max_peak \tab numeric \tab Maximum value of flood ratio for date range (discharge/flood threshold)\cr
 num_missing \tab numeric \tab Number of days with missing discharge data from input date range\cr
 size \tab numeric \tab Metric of the relative size of the river (logarithm of median annual flood)\cr
 state \tab character \tab State name\cr

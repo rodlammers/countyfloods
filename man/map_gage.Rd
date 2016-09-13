@@ -15,6 +15,8 @@ A map of USGS gages color coded by maximum flood magnitude.
 }
 \description{
 Creates a state level map of flood analysis output by USGS gage. Gages are
-color coded based on maximum flood magnitude.
+color coded based on maximum flood magnitude (for flood threshold = "Q2").
+If the flood threshold is "NWS", points are binary coded based on flood
+occurrence (e.g. yes/no).
 }
 

@@ -52,14 +52,8 @@ southampton_data <- get_flow_data(southampton_gages, start_date = "1999-01-01",
                                   end_date = "1999-12-31")
 ```
 
-The output from `get_flow_data` is a list with as many elements as there are gages with non-missing data: 
-
-```{r}
-class(southampton_data)
-length(southampton_data)
-```
-
-Each element of this list gives streamflow data for one of the gages: 
+The output from `get_flow_data` is a data frame with three columns ("site_no" = gage number, "date" = date
+of observation, and "discharge" = mean daily flow in cubic feet per second): 
 
 ```{r}
 head(southampton_data)
@@ -81,7 +75,8 @@ head(va_nws)
 dim(va_nws)
 ```
 
-Another way is with the `find_q2` function:
+Another way is with the `find_q2` function which calculates the median annual flood for each gage using
+a minimum of 20 years of annual peak flow data:
 
 ```{r}
 va_q2 <- find_q2(site_no = va_gages$site_no)
@@ -107,26 +102,31 @@ For the Virginia monitors, you can see that the flood values from NWS and the Q2
 Once you have data on gages, flood values, and flow data, you can use the `flood_analysis` function to get flood summaries by site. For example, to get flood summary statistics by gage for the Virginia gages, you can run: 
 
 ```{r}
+va_counties <- get_county_cd("Virginia")
 va_flow_data <- get_flow_data(va_gages, start_date = "2015-01-01",
                               end_date = "2015-12-31")
 va_floods <- flood_analysis(flow_data = va_flow_data, peaks = va_q2,
-                            gages = va_gages)
+                            gages = va_gages, county_cd = va_counties,
+                            threshold = "Q2")
 head(va_floods, 3)
 ```
 
 ```{r fig.width = 6, fig.height = 3.5, fig.align = "center", message = FALSE}
-ggplot(va_floods, aes(x = peak, fill = flood)) + 
+ggplot(va_floods, aes(x = max_peak, fill = flood)) + 
   geom_histogram()
 ```
 
-There is also a function that will allow you to get county-level aggregate statistics from this gage-level summary: 
+There is also a function that will allow you to get county-level aggregate statistics from this gage-level summary.
+Any counties with no gages or for which the gages didn't have flow data or flood threshold values are also 
+included: 
 
 ```{r}
 va_county_stats <- county_aggregates(flood_stats = va_floods)
 head(va_county_stats)
 ```
 
-You can use the `run_flood` function to put all of this together, and pull all flood summaries by either gage (`output = "gage"`), county (`output = "county"`), or both (`output = "both"`) for either a set of counties or all counties in a state.
+You can use the `run_flood` function to put all of this together, and pull all flood summaries by either gage (`output = "gage"`), county (`output = "county"`), or both (`output = "both"`) for either a set of counties or all counties in a state. It is more efficient to set (`output = "both"`) and then extract gage or county level data
+from the list than running each seperately since pulling flow data is time consuming.
 
 For example, to get all the flood statistics by gage for all gages with available data in Virginia, you can run: 
 
@@ -159,6 +159,51 @@ map_flood(fl_floods)
 map_flood(fl_floods, category = "major")
 ```
 
+The `long_term_flood` function is very similar to the `run_flood` function except it accepts a data frame as
+input with three columns: `county_cd`, `start_date`, and `end_date`. This allows you to analyze floods across multiple date ranges and multiple counties. For example, if we wanted to examine April flooding in three counties
+in northern Virginia we would create the following input data frame:
+
+```{r message = FALSE}
+county_cd <- c(rep("51013", 5), rep("51107", 5), rep("51059", 5))
+start_date <- rep(c("2010-04-01", "2011-04-01", "2012-04-01", "2013-04-01", "2014-04-01"), 3)
+end_date <- rep(c("2010-04-30", "2011-04-30", "2012-04-30", "2013-04-30", "2014-04-30"), 3)
+input_df <- data.frame(county_cd = county_cd, start_date = start_date, end_date = end_date, stringsAsFactors = FALSE)
+head(input_df)
+```
+
+It is important that these variables are character strings and not factors. The flood analysis can then be 
+performed:
+
+```{r message = FALSE}
+#With default values
+va_floods <- long_term_flood(input_df)
+va_gage_output <- va_floods[[1]]
+head(va_gage_output)
+va_county_output <- va_floods[[2]]
+head(va_county_output)
+```
+
+If you are interested in seeing when flooding occurred over a set time period, you can perform a time series
+analysis using the `time_series_flood` function. This has similar inputs to the `run_flood` function. For
+example, if you wanted to examine when flooding occurred in Virginia from 2010 to 2015:
+
+```{r message = FALSE}
+va_time_series <- time_series_flood(state = "Virginia", start_date = "2010-01-01",
+                      end_date = "2015-12-31", threshold = "NWS",
+                      flood_type = "flood")
+va_gage_output <- va_time_series[[1]]
+head(va_gage_output)
+va_county_output <- va_time_series[[2]]
+head(va_county_output)
+```
+
+The county-level output can be plotted using the `time_series_plot` function which shows bar charts of the
+timing and magnitude of floods during the selected time period. You can select values for `start_date` and `end_date` to change the x-limits on the plots or the default is to show the full time period including any 
+flood.
+
+```{r fig.height = 6, fig.width = 8, fig.align = "center", message = FALSE}
+time_series_plot(va_county_output)
+```
 
 ## More detailed examples
 
@@ -169,15 +214,15 @@ nc_floods <- run_flood(state = "North Carolina", start_date = "1999-09-15",
                        end_date = "1999-10-15", threshold = "Q2",
                        output = "both")
 nc_maps <- map_flood(nc_floods)
-nc_maps$gage_map
-nc_maps$county_map
+nc_maps[[1]]
+nc_maps[[2]]
 ```
 
 You can use the `map_tracks` function from `hurricaneexposure` (currently available in a development version on GitHub), using the flood maps as the base `plot_object` in this call. For example:
 
 ```{r fig.height = 3.5, fig.width = 6.25, fig.align = "center", message = FALSE}
 library(hurricaneexposure)
-map_tracks(storms = "Floyd-1999", plot_object = nc_maps$county_map)
+map_tracks(storms = "Floyd-1999", plot_object = nc_maps[[2]])
 ```
 
 ```{r fig.height = 3.5, fig.width = 6.25, fig.align = "center", message = FALSE}
