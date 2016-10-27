@@ -201,10 +201,10 @@ time_series_plot <- function(county_series, category = "moderate",
     category = "yes_flood"
   }
 
-  plyr::ddply(county_series, "county", function(x) {
+  no_output <- plyr::ddply(county_series, "county", function(x) {
 
   p1 <- ggplot2::ggplot(data = x, ggplot2::aes(x = date, y = num_gage)) +
-    ggplot2::geom_bar(stat = "identity") +
+    ggplot2::geom_bar(stat = "identity", width = 10) +
     ggplot2::xlim(start_date, end_date) +
     ggplot2::ylab("Gages") +
     ggplot2::xlab("Date") +
@@ -212,27 +212,29 @@ time_series_plot <- function(county_series, category = "moderate",
                                 list(county = R.utils::capitalize(unique(x$county)))))
 
   p2 <- ggplot2::ggplot(data = x, ggplot2::aes(x = date, y = max_peak)) +
-    ggplot2::geom_bar(stat = "identity") +
+    ggplot2::geom_bar(stat = "identity", width = 10) +
     ggplot2::xlim(start_date, end_date) +
     ggplot2::ylab("Flood Ratio") +
     ggplot2::xlab("Date") +
     ggplot2::ggtitle("Maximum flood ratio")
 
   p3 <- ggplot2::ggplot(data = x, ggplot2::aes(x = date, y = avg_peak)) +
-    ggplot2::geom_bar(stat = "identity") +
+    ggplot2::geom_bar(stat = "identity", width = 10) +
     ggplot2::xlim(start_date, end_date) +
     ggplot2::ylab("Flood Ratio") +
     ggplot2::xlab("Date") +
     ggplot2::ggtitle("Average flood ratio")
 
   p4 <- ggplot2::ggplot(data = x, ggplot2::aes(x = date, y = x[ ,tolower(category)])) +
-    ggplot2::geom_bar(stat = "identity") +
+    ggplot2::geom_bar(stat = "identity", width = 10) +
     ggplot2::xlim(start_date, end_date) +
     ggplot2::ylab("% Larger") +
     ggplot2::xlab("Date") +
     ggplot2::ggtitle("Percent of gages above flood threshold")
 
   gridExtra::grid.arrange(p1, p2, p3, p4, ncol = 1)
+
+  return(NA)
   })
 
 }

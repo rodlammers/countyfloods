@@ -74,7 +74,7 @@ VA_floods <- long_term_flood(input_df, threshold = "NWS")
 county_cd <- c("08069", "08013")
 start_date <- "2010-01-01"
 end_date <- "2014-01-01"
-test <- time_series_flood(county_cd = county_cd, start_date = start_date, end_date = end_date, threshold = "NWS")
+test <- time_series_flood(county_cd = county_cd, start_date = start_date, end_date = end_date, threshold = "Q2")
 gages <- test[[1]]
 county <- test[[2]]
 

@@ -67,7 +67,8 @@ ggplot(southampton_data, aes(x = date, y = discharge, color = site_no)) +
 
 To determine when a flood occurred, we need a value to classify a "flood" for each stream gage.
 
-One way to get this is with the `find_nws` function, which gets the National Weather Service flood value when available for a gage site. For example, for the Virginia gages: 
+One way to get this is with the `find_nws` function, which gets the National Weather Service flood discharge 
+threshold when available for a gage site. Note there are four categories of NWS floods: "Action", "Flood", "Moderate", and "Major". Gages may have some, all, or none of these flood thresholds available. For example, for the Virginia gages: 
 
 ```{r}
 va_nws <- find_nws(site_no = va_gages$site_no, type = "moderate")
@@ -126,7 +127,7 @@ head(va_county_stats)
 ```
 
 You can use the `run_flood` function to put all of this together, and pull all flood summaries by either gage (`output = "gage"`), county (`output = "county"`), or both (`output = "both"`) for either a set of counties or all counties in a state. It is more efficient to set (`output = "both"`) and then extract gage or county level data
-from the list than running each seperately since pulling flow data is time consuming.
+from the list than running each separately since pulling flow data is time consuming.
 
 For example, to get all the flood statistics by gage for all gages with available data in Virginia, you can run: 
 
@@ -146,7 +147,7 @@ fl_floods <- run_flood(state = "Florida", start_date = "2004-01-01",
 head(fl_floods)
 ```
 
-These output can be mapped using the `map_flood` function. If the data was collected by gage, this will show a point map with the flood level at each gage:
+These output can be mapped using the `map_flood` function. If the data was collected by gage, this will show a point map with the flood level at each gage. The size of the point corresponds to the size of the stream, based on the median flood value (Q2):
 
 ```{r fig.width = 8, fig.height = 3.5, fig.align = "center", message = FALSE}
 map_flood(va_floods) 
