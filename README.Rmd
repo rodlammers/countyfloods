@@ -43,7 +43,7 @@ va_gages <- get_county_cd("Virginia") %>%
 head(va_gages)
 ```
 
-The function sends county-by-county requests to the USGS water services server (https://waterservices.usgs.gov) and, if there are data for gages within that county, returns that data and adds it to the dataframe returned by the function. This function may result in a message about a 404 HTTP status for some counties. This means ...
+The function sends county-by-county requests to the USGS water services server (https://waterservices.usgs.gov) and, if there are data for gages within that county, returns that data and adds it to the dataframe returned by the function. This function may result in a message about a 404 HTTP status for some counties. This means that no data was found for one of the counties being queried but will not affect proper running of the function for other counties. Internally, this function uses the `whatNWISsites` function from the  package, `dataRetrieval`, but adds the county FIPS code for each gage, allowing users to join gage data with other data identified by county FIPS. 
 
 Once you have a list of gage numbers for which you would like to pull flow data, you can use the `get_flow_data` function to pull that data. For example, to pull data for all the stream gage flow data for 1999 for gages in Southhampton County, VA (FIPS code 51175), you can run: 
 
@@ -54,32 +54,39 @@ southampton_data <- get_flow_data(southampton_gages, start_date = "1999-01-01",
                                   end_date = "1999-12-31")
 ```
 
-The output from `get_flow_data` is a data frame with three columns ("site_no" = gage number, "date" = date
-of observation, and "discharge" = mean daily flow in cubic feet per second): 
+The output from `get_flow_data` is a data frame with daily streamflow for the queried gages over the requested dates. The data frame has with three columns: "site_no" = gage number, "date" = date
+of observation, and "discharge" = mean daily flow in cubic feet per second (USGS parameter code 00060): 
 
 ```{r}
 head(southampton_data)
 ```
 
-```{r fig.width = 6, fig.height = 3.5}
+```{r fig.width = 7, fig.height = 3.25}
 library(ggplot2)
 ggplot(southampton_data, aes(x = date, y = discharge, color = site_no)) + 
-  geom_line()
+  geom_line() + theme_classic() + 
+  labs(y = "mean daily flow (cubic ft / s)", color = "gage site #")
 ```
 
-To determine when a flood occurred, we need a value to classify a "flood" for each stream gage.
+To determine when a flood occurred, we need a value to determine a gage-specific value of streamflow that consitutes a "flood". Expected streamflow values vary substantially from gage to gage, so it is criticial to determine a sensible threshold for each gage included in a study before trying to identify floods at each gage. 
 
-One way to get this is with the `find_nws` function, which gets the National Weather Service flood discharge 
-threshold when available for a gage site. Note there are four categories of NWS floods: "Action", "Flood", "Moderate", and "Major". Gages may have some, all, or none of these flood thresholds available. For example, for the Virginia gages: 
+One way to get gage-specific flood thresholds is with the `find_nws` function, which gets the National Weather Service flood discharge 
+threshold, when available, for a gage site. Note there are four NWS thresholds for each gage, representing cutoffs for different levels of floods: "Action", "Flood", "Moderate", and "Major". 
+
+
+Gages may have some, all, or none of these NWS flood thresholds available. If a gage does not have any of the four thresholds, it is excluded from the outpout of the `find_nws` function. For example, to get "Moderate" flood thresholds for the Virginia gages, you can run: 
 
 ```{r}
 va_nws <- find_nws(site_no = va_gages$site_no, type = "moderate")
 head(va_nws)
 dim(va_nws)
+summary(va_nws$flood_val)
 ```
 
-Another way is with the `find_q2` function which calculates the median annual flood for each gage using
-a minimum of 20 years of annual peak flow data:
+Many USGS gages do not have NWS flood thresholds for any of the four categories of floods. Therefore, use of the NWS flood thresholds to identify floods may severely limit the sample size of the data output. 
+
+Another way to get gage-specific flood thresholds is with the `find_q2` function, which calculates the median annual flood for each gage using
+a minimum of 20 years of USGS annual peak flow data:
 
 ```{r}
 va_q2 <- find_q2(site_no = va_gages$site_no)
