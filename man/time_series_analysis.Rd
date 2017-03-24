@@ -77,4 +77,3 @@ va_time_series <- time_series_analysis(flow_data = va_flow_data, peaks = va_peak
                         q2_val = dplyr::rename_(va_peaks, .dots = list(q2 = "flood_val")))
 
 }
-

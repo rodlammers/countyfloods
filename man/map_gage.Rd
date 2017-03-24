@@ -19,4 +19,3 @@ color coded based on maximum flood magnitude (for flood threshold = "Q2").
 If the flood threshold is "NWS", points are binary coded based on flood
 occurrence (e.g. yes/no).
 }
-

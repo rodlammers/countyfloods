@@ -18,9 +18,12 @@ A character vector with the 5-digit FIPS codes for all counties
 This function will return all county FIPS codes for all counties within a
 state or states.
 }
+\details{
+This function uses the \code{county.fips} dataset from the \code{maps}
+   package to pull county FIPS for a state.
+}
 \examples{
  get_county_cd("Virginia")
  get_county_cd(c("North Carolina", "South Carolina"))
 
 }
-

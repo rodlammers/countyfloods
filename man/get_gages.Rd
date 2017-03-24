@@ -16,8 +16,17 @@ notation.}
 notation.}
 }
 \value{
-A dataframe with gage names and numbers for stream gages within
-   the county and time range.
+A dataframe that gives the following variables for stream gages within
+   the county and time range:
+   \itemize{
+   \item{agency_cd: }
+   \item{site_no: }
+   \item{station_nm: }
+   \item{site_tp_cd: }
+   \item{dec_lat_va: }
+   \item{dec_long_va: }
+   \item{county_cd: The five-digit FIPS code of the county in which the gage is located}
+   }
 }
 \description{
 Pulls gage numbers of all gages with discharge data within a county and
@@ -35,4 +44,3 @@ va_gages <- get_county_cd("Virginia") \%>\%
    get_gages(start_date = "2015-01-01", end_date = "2015-12-31")
 
 }
-

@@ -46,4 +46,3 @@ county and date range instead of just county.
 Internal function used within \\code{long_term_flood} function.
 
 }
-

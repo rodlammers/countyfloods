@@ -36,4 +36,3 @@ va_gages <- get_gages(va_counties, start_date = "2015-01-01",
 va_nws <- find_nws(site_no = va_gages$site_no, type = "moderate")
 
 }
-

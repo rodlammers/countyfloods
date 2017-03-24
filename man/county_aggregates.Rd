@@ -46,4 +46,3 @@ va_stats <- flood_analysis(flow_data = va_flow_data, peaks = va_peaks,
 va_county_stats <- county_aggregates(flood_stats = va_stats)
 
 }
-

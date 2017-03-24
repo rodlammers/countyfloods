@@ -4,7 +4,8 @@
 \alias{flood_analysis}
 \title{Compute flood statistics}
 \usage{
-flood_analysis(flow_data, peaks, gages, county_cd, q2_val, threshold)
+flood_analysis(flow_data, peaks, gages, county_cd, q2_val = data.frame(site_no
+  = "", q2 = NA, stringsAsFactors = FALSE), threshold)
 }
 \arguments{
 \item{flow_data}{A data frame with discharge data for each USGS gage found
@@ -59,4 +60,3 @@ va_stats <- flood_analysis(flow_data = va_flow_data, peaks = va_peaks,
                        gages = va_gages)
 
 }
-
