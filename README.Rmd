@@ -219,20 +219,5 @@ nc_maps[[1]]
 nc_maps[[2]]
 ```
 
-You can use the `map_tracks` function from `hurricaneexposure` (currently available in a development version on GitHub), using the flood maps as the base `plot_object` in this call. For example:
-
-```{r fig.height = 3.5, fig.width = 6.25, fig.align = "center", message = FALSE}
-library(hurricaneexposure)
-map_tracks(storms = "Floyd-1999", plot_object = nc_maps[[2]])
-```
-
-```{r fig.height = 3.5, fig.width = 6.25, fig.align = "center", message = FALSE}
-map_tracks(storms = c("Bonnie-2004", "Charley-2004", 
-                      "Frances-2004", "Jeanne-2004"), 
-           plot_object = map_flood(fl_floods, category = "major"),
-           color = "aquamarine3")
-```
-
-
 
 

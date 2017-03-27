@@ -83,7 +83,7 @@
 #'
 #' @export
 run_flood <- function(county_cd = NULL, state = NULL, start_date, end_date, threshold = "Q2",
-                      flood_type = "flood", output = "both"){
+                      flood_type = "flood", output = "both", weight = "Q2"){
 
   #Check inputs and return error messages as necessary
   if(!is.character(county_cd) & !is.null(county_cd)) stop("Input county_cd must be a character")
@@ -123,7 +123,7 @@ run_flood <- function(county_cd = NULL, state = NULL, start_date, end_date, thre
 
   #get flood stats by gage
   flood_stats <- flood_analysis(flow_data = flow_data, peaks = peaks, gages = gages,
-                                county_cd = county_cd, q2_val = q2_val, threshold = threshold)
+                                county_cd = county_cd, q2_val = q2_val, threshold = threshold, weight = weight)
 
   #get flood stats by county
   county_stats <- county_aggregates(flood_stats = flood_stats, county_cd = county_cd)
@@ -351,7 +351,8 @@ long_term_flood <- function(input_df, threshold = "Q2",
 #'
 #' @export
 time_series_flood <- function(county_cd = NULL, state = NULL, start_date, end_date,
-                              threshold = "Q2", flood_type = "flood") {
+                              threshold = "Q2", flood_type = "flood", weight = "Q2",
+                              Q2_magnitude = "Moderate", filter_data = TRUE) {
 
   #Determine if county codes or state name was provided. If state name given,
   #find all county codes in the state
@@ -378,6 +379,7 @@ time_series_flood <- function(county_cd = NULL, state = NULL, start_date, end_da
 
   #get flood stats
   flood_stats <- time_series_analysis(flow_data = flow_data, peaks = peaks, gages = gages,
-                                county_cd = county_cd, q2_val = q2_val, threshold = threshold)
+                                county_cd = county_cd, q2_val = q2_val, threshold = threshold,
+                                weight = weight, Q2_magnitude = Q2_magnitude, filter_data = filter_data)
 
 }

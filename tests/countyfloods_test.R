@@ -4,9 +4,9 @@ end_date <- as.Date("2013-09-30", format = "%Y-%m-%d")
 county_cd <- c("08013", "08031", "08069", "08001", "08059", "08123")
 
 test <- run_flood(county_cd = county_cd, start_date = start_date,
-                  end_date = end_date, threshold = "Q2", output = "both")
-test[[1]]
-test[[2]]
+                  end_date = end_date, threshold = "Q2", output = "both", weight = "Q2")
+gage_out<- test[[1]]
+county_out <- test[[2]]
 
 map_flood(test)
 
@@ -28,12 +28,12 @@ start_date <- as.Date("2015-10-01", format = "%Y-%m-%d")
 end_date <- as.Date("2015-10-15", format = "%Y-%m-%d")
 
 test <- run_flood(state = state, start_date = start_date, end_date = end_date,
-                  threshold = "Q2", output = "both")
+                  threshold = "Q2", output = "both", weight = "DA")
 gage_output <- test[[1]]
 county_output <- test[[2]]
 
 map_flood(test)
-
+map_flood(gage_output)
 
 #Virginia Tests
 va_floods <- run_flood(state = "Virginia", start_date = "2015-01-01",
@@ -56,7 +56,7 @@ input_df <- data.frame(county_cd = county_cd, start_date = start_date, end_date 
 test <- long_term_flood(input_df = input_df)
 gage <- test[[1]]
 county <- test[[2]]
-map_flood(county)
+map_flood(gage)
 
 county_cd <- c(rep("51013", 5), rep("51107", 5), rep("51059", 5))
 start_date <- rep(c("2010-04-01", "2011-04-01", "2012-04-01", "2013-04-01", "2014-04-01"), 3)
@@ -74,15 +74,17 @@ VA_floods <- long_term_flood(input_df, threshold = "NWS")
 county_cd <- c("08069", "08013")
 start_date <- "2010-01-01"
 end_date <- "2014-01-01"
-test <- time_series_flood(county_cd = county_cd, start_date = start_date, end_date = end_date, threshold = "Q2")
+test <- time_series_flood(county_cd = county_cd, start_date = start_date, end_date = end_date,
+                          threshold = "Q2", filter_data = TRUE)
 gages <- test[[1]]
 county <- test[[2]]
 
-time_series_plot(county)
+time_series_plot(county, category = "Moderate")
 
+#Virginia
 va_time_series <- time_series_flood(county_cd = c("51013", "51107", "51059"), start_date = "2010-01-01",
                       end_date = "2015-12-31", threshold = "NWS",
-                      flood_type = "action")
+                      flood_type = "flood", filter_data = TRUE, weight = "DA")
 gage <- va_time_series[[1]]
 county <- va_time_series[[2]]
 time_series_plot(va_time_series[[2]])

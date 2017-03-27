@@ -31,22 +31,35 @@ get_gages <- function(county_cd, start_date, end_date){
   #Check inputs and return error messages as necessary
   if(!is.character(county_cd)) stop("Input county_cd must be a character")
 
-  #Get gages by county code. This serves two purposes: first, the whatNWISsites function
-  #has a limit of 20 county codes so calling by county avoids this issues; second, this
-  #allows for the county code to be stored with each gage number
-  safe_gage_extract <- purrr::safely(gage_extract, quiet = TRUE)
-  gages <- lapply(county_cd, safe_gage_extract, start_date, end_date)
+  #Check if more than 20 county_cd values, if so, split
+  num_cc <- length(county_cd)
+  num_run <- ceiling(num_cc / 20)
+  gages_list <- list()
 
-  check_data <- sapply(gages, function(x) is.null(x$result))
+  county_cd_split <- split(county_cd, ceiling(seq_along(county_cd) / 20))
 
-  gages_list <- lapply(gages[!check_data], function(x) x$result)
+  gages_list <- lapply(county_cd_split, gage_extract, start_date, end_date)
+
   gages_df <- suppressWarnings(dplyr::bind_rows(gages_list))
 
-  #remove query time column and remove duplicates
+  #remove query time column, remove duplicates, and include only stream gages (no canals or tidal rivers)
   gages_df <- gages_df %>%
     dplyr::select_(.dots = list(quote(-queryTime))) %>%
+    dplyr::filter_(~ site_tp_cd == "ST") %>%
     dplyr::distinct_()
 
+  #Get gage attributes and add drainage area and county code to data frame
+  gage_attr <- get_gage_attributes(gages_df$site_no) %>%
+    dplyr::select_(.dots = list("site_no", "state_cd", "county_cd", "drain_area_va"))
+
+  #Match county code and drainage area to each gage
+  gages_df <- gages_df %>%
+    dplyr::left_join(gage_attr, by = "site_no") %>%
+    dplyr::mutate_(county_cd2 = ~ paste0(state_cd, county_cd)) %>%
+    dplyr::mutate_(DA = ~ drain_area_va) %>%
+    dplyr::select_("agency_cd", "site_no", "station_nm", "site_tp_cd", "dec_lat_va",
+                                "dec_long_va", "county_cd2", "DA") %>%
+    dplyr::rename_(.dots = list(county_cd = "county_cd2"))
 
   return(gages_df)
 }
@@ -80,7 +93,7 @@ gage_extract <- function(county_cd, start_date, end_date){
                                         startDT = start_date,
                                         endDT = end_date)
 
-  gages$county_cd <- county_cd
+  #gages$county_cd <- county_cd
 
   return(gages)
 }
@@ -143,6 +156,30 @@ get_flow_data <- function(gages_df, start_date, end_date){
   return(flow_data)
 }
 
+#' Get attributes of gages
+#'
+#' This function will return general attributes of supplied gage numbers. These
+#' include (but aren't limited to) watershed drainage area (\code{drain_area_val}) at the gage and
+#' county FIPS code (\code{state_cd} and \code{county_cd}).
+#'
+#' @param site_no Character vector of USGS gage site numbers.
+#'
+#' @return A data frame with a variety of attributes for each gage. See
+#' \code{\link[dataRetrieval]{readNWISsites}} for a full list of returned
+#' values.
+#'
+#' @seealso \code{\link[dataRetrieval]{readNWISsite}}
+#'
+#' @examples
+#' gages <- get_gages("12086", start_date = "1988-01-01", end_date = "2015-01-01")
+#' get_gage_attributes(gages$site_no)
+#'
+#' @export
+get_gage_attributes <- function(site_no) {
+
+  gage_attr <- dataRetrieval::readNWISsite(site_no)
+
+}
 
 #' Get all FIPS county codes within a state
 #'

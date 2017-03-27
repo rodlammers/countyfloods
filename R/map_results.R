@@ -94,6 +94,7 @@ map_gage <- function(flood_stats) {
     ggplot2::geom_point(data = flood_stats, ggplot2::aes(x = long, y = lat, group = NA, fill = flood,
                         size = size), alpha = 0.8, pch = 21, show.legend = TRUE) +
     ggplot2::scale_fill_manual(values = colors) +
+    ggplot2::coord_map() +
     ggplot2::theme_void()
 }
 
@@ -160,6 +161,7 @@ map_county <- function(county_stats, category = "minor") {
     ggplot2::geom_polygon(data = counties, ggplot2::aes(x = long, y = lat, group = group),
                           fill = NA, color = "black") +
     ggplot2::scale_fill_manual(values = colors) +
+    ggplot2::coord_map() +
     ggplot2::theme_void()
 }
 
@@ -201,7 +203,7 @@ time_series_plot <- function(county_series, category = "moderate",
     category = "yes_flood"
   }
 
-  no_output <- plyr::ddply(county_series, "county", function(x) {
+  no_output <- suppressWarnings(plyr::ddply(county_series, "county", function(x) {
 
   p1 <- ggplot2::ggplot(data = x, ggplot2::aes(x = date, y = num_gage)) +
     ggplot2::geom_bar(stat = "identity", width = 10) +
@@ -228,13 +230,14 @@ time_series_plot <- function(county_series, category = "moderate",
   p4 <- ggplot2::ggplot(data = x, ggplot2::aes(x = date, y = x[ ,tolower(category)])) +
     ggplot2::geom_bar(stat = "identity", width = 10) +
     ggplot2::xlim(start_date, end_date) +
-    ggplot2::ylab("% Larger") +
+    ggplot2::ylab("% Above") +
     ggplot2::xlab("Date") +
     ggplot2::ggtitle("Percent of gages above flood threshold")
 
-  gridExtra::grid.arrange(p1, p2, p3, p4, ncol = 1)
+  grid::grid.newpage()
+  grid::grid.draw(rbind(ggplotGrob(p1), ggplotGrob(p2), ggplotGrob(p3), ggplotGrob(p4), size = "last"))
 
   return(NA)
-  })
+  }))
 
 }
