@@ -45,4 +45,3 @@ va_floods <- run_flood(state = "Virginia", start_date = "2015-01-01",
 map_flood(va_floods)
 
 }
-

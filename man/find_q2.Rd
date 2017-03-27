@@ -35,4 +35,3 @@ va_q2 <- find_q2(va_gages$site_no)
 \seealso{
 \code{\link[dataRetrieval]{readNWISpeak}}
 }
-

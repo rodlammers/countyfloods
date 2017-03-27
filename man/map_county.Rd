@@ -20,4 +20,3 @@ Creates a state level map of flood analysis output by county. Counties are
 color coded based on the percentage of gages in that county at or exceeding a
 given flood magnitude.
 }
-

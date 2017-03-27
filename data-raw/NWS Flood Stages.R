@@ -6,6 +6,10 @@ library(plyr)
 # so best practice is to do relative file names from there (data-raw/filename)
 #setwd("C:/Users/rlammers/Documents/NWS Flood Stages")
 
+# BA: Do we have information anywhere about where we got these two files ("NWS
+# Flood Stages.txt" and "USGS-NWS Gages.txt")? Maybe the website where we
+# downloaded them?
+
 NWS_data <- read.table("data-raw/NWS Flood Stages.txt", header = TRUE, sep = "\t")
 gage_no <- read.table("data-raw/USGS-NWS Gages.txt", header = TRUE, sep = "\t",
                       colClasses = c("character", "character"))

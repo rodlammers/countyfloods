@@ -42,4 +42,3 @@ miami_flow_data <- get_gages("12086", start_date = "2000-01-01",
 \seealso{
 \code{\link[dataRetrieval]{readNWISdv}}
 }
-

@@ -23,4 +23,3 @@ flow with a probability of 0.5.
 \references{
 Rao, A.R. and Hamed, K.H. 2000. Flood Frequency Analysis. CRC Press: Boca Raton.
 }
-

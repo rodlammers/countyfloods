@@ -9,8 +9,19 @@
 #' @param end_date Character string with the end date, using "YYYY-MM-DD"
 #'    notation.
 #'
-#' @return A dataframe with gage names and numbers for stream gages within
-#'    the county and time range.
+#' @return A dataframe that gives the following variables for stream gages within
+#'    the county and time range:
+#'    \itemize{
+#'    \item{\textbf{agency_cd:} Agency running the gage (typically will be the USGS)}
+#'    \item{\textbf{site_no:} Gage site ID number}
+#'    \item{\textbf{station_nm:} Name of the gage site}
+#'    \item{\textbf{site_tp_cd:} Type of gage}
+#'    \item{\textbf{dec_lat_va:} Latitude of the gage site, in decimal degrees}
+#'    \item{\textbf{dec_long_va:} Longitude of the gage site, in decimal degrees}
+#'    \item{\textbf{county_cd:} The five-digit FIPS code of the county in which the gage is located}
+#'    }
+#'  Note that the returned object is the same as that returned by the \code{whatNWISsites} funtion
+#'  in the \code{dataRetrieval} package, but with county FIPS added for each gage.
 #'
 #' @examples
 #'
@@ -191,6 +202,9 @@ get_gage_attributes <- function(site_no) {
 #'
 #' @return A character vector with the 5-digit FIPS codes for all counties
 #'    within the specified state or states.
+#'
+#' @details This function uses the \code{county.fips} dataset from the \code{maps}
+#'    package to pull county FIPS for a state.
 #'
 #' @examples
 #'  get_county_cd("Virginia")

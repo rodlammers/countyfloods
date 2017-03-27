@@ -36,4 +36,3 @@ gage_extract("12086", start_date = "2000-01-01", end_date = "2009-12-31")
 \seealso{
 \code{\link[dataRetrieval]{whatNWISsites}}
 }
-
