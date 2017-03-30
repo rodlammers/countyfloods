@@ -3,8 +3,8 @@
 #' Displays a state or multi-state map summarizing flood analysis results either
 #' by gage or county.
 #'
-#' @param flood_stats Data frame of flood analysis results, output of
-#'   \code{run_flood} function.
+#' @param flood_stats Either a data frame of flood analysis results, by gage or by county,
+#'   or a list of both data frames.
 #' @param category Character string of the flood magnitude category to be used
 #'   for mapping (one of "minor", "moderate", "major", or "extreme"). This
 #'   parameter only works when mapping county-level, rather than gage-level,
@@ -65,9 +65,11 @@ map_flood <- function(flood_stats, category = "minor") {
 #' If the flood threshold is "NWS", points are binary coded based on flood
 #' occurrence (e.g. yes/no).
 #'
-#' @inheritParams map_flood
+#' @param flood_stats Data frame of flood analysis results, by gage.
 #'
 #' @return A map of USGS gages color coded by maximum flood magnitude.
+#'
+#' @importFrom dplyr %>%
 #'
 #' @export
 map_gage <- function(flood_stats) {
@@ -80,19 +82,33 @@ map_gage <- function(flood_stats) {
     names(colors) <- c("Extreme", "Major", "Moderate", "Minor", "None")
   }
 
+  #Check "size" variable, if NA, use other metric (Q2 or DA)
+  if (sum(!is.na(flood_stats$size)) == 0 && sum(!is.na(flood_stats$Q2)) == 0) {
+    #Q2 NA, replace size with DA
+    flood_stats <- flood_stats %>%
+      dplyr::mutate_(size = ~ replace(size, is.na(size), log10(DA)))
+    warning("Point size based on log10(DA).")
+  }else if(sum(!is.na(flood_stats$size)) == 0 && sum(!is.na(flood_stats$Q2)) == 0) {
+    #DA NA, replace size with Q2
+    flood_stats <- flood_stats %>%
+      dplyr::mutate_(size = ~ replace(size, is.na(size), log10(Q2)))
+    warning("Point size based on log10(Q2).")
+  }
+
+
   region <- as.character(unique(flood_stats$state))
 
   counties <- ggplot2::map_data("county", region = region)
-  counties_sub <- subset(counties, subregion %in% flood_stats$county[!is.na(flood_stats$lat)])
-  counties_sub_ND <- subset(counties, subregion %in% flood_stats$county[is.na(flood_stats$lat)])
-  ggplot2::ggplot(counties_sub, ggplot2::aes(x = long, y = lat, group = group)) +
+  counties_sub <- counties[counties$subregion %in% flood_stats$county[!is.na(flood_stats$lat)], ]
+  counties_sub_ND <- counties[counties$subregion %in% flood_stats$county[is.na(flood_stats$lat)], ]
+  ggplot2::ggplot(counties_sub, ggplot2::aes_string(x = "long", y = "lat", group = "group")) +
     ggplot2::geom_polygon(fill = "gray95", color = "black") +
-    ggplot2::geom_polygon(data = counties, ggplot2::aes(x = long, y = lat, group = group),
+    ggplot2::geom_polygon(data = counties, ggplot2::aes_string(x = "long", y = "lat", group = "group"),
                           fill = NA, color = "black") +
-    ggplot2::geom_polygon(data = counties_sub_ND, ggplot2::aes(x = long, y = lat, group = group),
+    ggplot2::geom_polygon(data = counties_sub_ND, ggplot2::aes_string(x = "long", y = "lat", group = "group"),
                           fill = "gray60", color = "black") +
-    ggplot2::geom_point(data = flood_stats, ggplot2::aes(x = long, y = lat, group = NA, fill = flood,
-                        size = size), alpha = 0.8, pch = 21, show.legend = TRUE) +
+    ggplot2::geom_point(data = flood_stats, ggplot2::aes_string(x = "long", y = "lat", group = NA, fill = "flood",
+                        size = "size"), alpha = 0.8, pch = 21, show.legend = TRUE) +
     ggplot2::scale_fill_manual(values = colors) +
     ggplot2::coord_map() +
     ggplot2::theme_void()
@@ -104,9 +120,16 @@ map_gage <- function(flood_stats) {
 #' color coded based on the percentage of gages in that county at or exceeding a
 #' given flood magnitude.
 #'
-#' @inheritParams map_flood
+#' @param county_stats Data frame of flood analyasis results, summarized by
+#'   county.
+#' @param category Character string of the flood magnitude category to be used
+#'   for mapping (one of "minor", "moderate", "major", or "extreme"). This
+#'   parameter only works when mapping county-level, rather than gage-level,
+#'   values.
 #'
 #' @return A map of counties color coded by percentage of gages experiencing flooding.
+#'
+#' @importFrom dplyr %>%
 #'
 #' @export
 map_county <- function(county_stats, category = "minor") {
@@ -151,14 +174,14 @@ map_county <- function(county_stats, category = "minor") {
   #Get all counties for states analyzed as well as the subset of counties with
   # actual data
   counties <- ggplot2::map_data("county", region = region)
-  counties_sub <- subset(counties, subregion %in% county_stats$county)
+  counties_sub <- counties[counties$subregion %in% county_stats$county, ]
 
   counties_sub$cat <- county_stats$cat[match(counties_sub$subregion,
                                              county_stats$county)]
 
-  ggplot2::ggplot(counties_sub, ggplot2::aes(x = long, y = lat, group = group)) +
-    ggplot2::geom_polygon(ggplot2::aes(fill = cat), color = "black") +
-    ggplot2::geom_polygon(data = counties, ggplot2::aes(x = long, y = lat, group = group),
+  ggplot2::ggplot(counties_sub, ggplot2::aes_string(x = "long", y = "lat", group = "group")) +
+    ggplot2::geom_polygon(ggplot2::aes_string(fill = "cat"), color = "black") +
+    ggplot2::geom_polygon(data = counties, ggplot2::aes_string(x = "long", y = "lat", group = "group"),
                           fill = NA, color = "black") +
     ggplot2::scale_fill_manual(values = colors) +
     ggplot2::coord_map() +
@@ -205,37 +228,42 @@ time_series_plot <- function(county_series, category = "moderate",
 
   no_output <- suppressWarnings(plyr::ddply(county_series, "county", function(x) {
 
-  p1 <- ggplot2::ggplot(data = x, ggplot2::aes(x = date, y = num_gage)) +
+  p1 <- ggplot2::ggplot(data = x, ggplot2::aes_string(x = "date", y = "num_gage")) +
     ggplot2::geom_bar(stat = "identity", width = 10) +
     ggplot2::xlim(start_date, end_date) +
     ggplot2::ylab("Gages") +
     ggplot2::xlab("Date") +
     ggplot2::ggtitle(substitute(paste("Number of gages with a flood (", county, " County)"),
-                                list(county = R.utils::capitalize(unique(x$county)))))
+                                list(county = R.utils::capitalize(unique(x$county))))) +
+    ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
 
-  p2 <- ggplot2::ggplot(data = x, ggplot2::aes(x = date, y = max_peak)) +
+  p2 <- ggplot2::ggplot(data = x, ggplot2::aes_string(x = "date", y = "max_peak")) +
     ggplot2::geom_bar(stat = "identity", width = 10) +
     ggplot2::xlim(start_date, end_date) +
     ggplot2::ylab("Flood Ratio") +
     ggplot2::xlab("Date") +
-    ggplot2::ggtitle("Maximum flood ratio")
+    ggplot2::ggtitle("Maximum flood ratio") +
+    ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
 
-  p3 <- ggplot2::ggplot(data = x, ggplot2::aes(x = date, y = avg_peak)) +
+  p3 <- ggplot2::ggplot(data = x, ggplot2::aes_string(x = "date", y = "avg_peak")) +
     ggplot2::geom_bar(stat = "identity", width = 10) +
     ggplot2::xlim(start_date, end_date) +
     ggplot2::ylab("Flood Ratio") +
     ggplot2::xlab("Date") +
-    ggplot2::ggtitle("Average flood ratio")
+    ggplot2::ggtitle("Average flood ratio") +
+    ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
 
-  p4 <- ggplot2::ggplot(data = x, ggplot2::aes(x = date, y = x[ ,tolower(category)])) +
+  p4 <- ggplot2::ggplot(data = x, ggplot2::aes_(x = ~ date, y = ~ x[ ,tolower(category)])) +
     ggplot2::geom_bar(stat = "identity", width = 10) +
     ggplot2::xlim(start_date, end_date) +
     ggplot2::ylab("% Above") +
     ggplot2::xlab("Date") +
-    ggplot2::ggtitle("Percent of gages above flood threshold")
+    ggplot2::ggtitle("Percent of gages above flood threshold") +
+    ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
 
   grid::grid.newpage()
-  grid::grid.draw(rbind(ggplotGrob(p1), ggplotGrob(p2), ggplotGrob(p3), ggplotGrob(p4), size = "last"))
+  grid::grid.draw(rbind(ggplot2::ggplotGrob(p1), ggplot2::ggplotGrob(p2), ggplot2::ggplotGrob(p3),
+                        ggplot2::ggplotGrob(p4), size = "last"))
 
   return(NA)
   }))

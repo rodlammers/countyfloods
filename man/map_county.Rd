@@ -7,6 +7,9 @@
 map_county(county_stats, category = "minor")
 }
 \arguments{
+\item{county_stats}{Data frame of flood analyasis results, summarized by
+county.}
+
 \item{category}{Character string of the flood magnitude category to be used
 for mapping (one of "minor", "moderate", "major", or "extreme"). This
 parameter only works when mapping county-level, rather than gage-level,

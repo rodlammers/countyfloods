@@ -1,14 +1,15 @@
 library(dataRetrieval)
 library(plyr)
 
-#How do I refer to this file if its saved as part of the package?
-# BA: You can assume the package is working from the main package directory,
-# so best practice is to do relative file names from there (data-raw/filename)
-#setwd("C:/Users/rlammers/Documents/NWS Flood Stages")
-
 # BA: Do we have information anywhere about where we got these two files ("NWS
 # Flood Stages.txt" and "USGS-NWS Gages.txt")? Maybe the website where we
 # downloaded them?
+
+# RL: The "NWS Flood Stages.txt" data were extracted from a shapefile published
+# daily by the NWS on current river stages (including the NWS flood thresholds):
+# http://water.weather.gov/ahps/download.php. The corresponding USGS gage names
+# were obtained from the following text file:
+#http://www.nws.noaa.gov/oh/hads/USGS/ALL_USGS-HADS_SITES.txt.
 
 NWS_data <- read.table("data-raw/NWS Flood Stages.txt", header = TRUE, sep = "\t")
 gage_no <- read.table("data-raw/USGS-NWS Gages.txt", header = TRUE, sep = "\t",

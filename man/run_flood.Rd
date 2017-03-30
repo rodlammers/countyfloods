@@ -5,7 +5,8 @@
 \title{Return flood metrics by county codes or state names}
 \usage{
 run_flood(county_cd = NULL, state = NULL, start_date, end_date,
-  threshold = "Q2", flood_type = "flood", output = "both")
+  threshold = "Q2", flood_type = "flood", output = "both",
+  weight = "Q2")
 }
 \arguments{
 \item{county_cd}{Character vector with the county FIPS code(s)}
@@ -27,6 +28,10 @@ classifications (one of "action", "flood", "moderate", or "major")}
 
 \item{output}{Character string of output summary type (either "gage",
 "county", or "both"). Defaults to "both".}
+
+\item{weight}{Character string of variable to be used to scale by river size
+for weighted averages and scaling point sizes on maps. Options are median
+annual flood ("Q2") or drainage area ("DA"). Defaults to "Q2".}
 }
 \value{
 A data frame with output at either the gage or county level,
@@ -36,19 +41,23 @@ A data frame with output at either the gage or county level,
   \tabular{lll}{
   Name \tab Type \tab Description\cr
   site_no \tab character \tab USGS gage ID\cr
+  county_cd \tab character \tab FIPS code of gage county location\cr
+  lat \tab numeric \tab Gage latitude\cr
+  long \tab numeric \tab Gage longitude\cr
   avg_peak \tab numeric \tab Mean flood ratio for date range
      (discharge/flood threshold)\cr
   flood_dur \tab numeric \tab Number of days in date range
      discharge above flood threshold\cr
-  peak \tab numeric \tab Maximum value of flood ratio for date
+  max_peak \tab numeric \tab Maximum value of flood ratio for date
      range (discharge/flood threshold)\cr
   num_missing \tab numeric \tab Number of days in given date
      range with no discharge data at that gage\cr
-  lat \tab numeric \tab Gage latitude\cr
-  long \tab numeric \tab Gage longitude\cr
-  county_cd \tab character \tab FIPS code of gage county location\cr
-  county \tab character \tab County name\cr
+  Q2 \tab numeric \tab Median annual discharge (cubic feet per second)\cr
+  DA \tab numeric \tab Drainage area of the gage (square miles)\cr
+  size \tab numeric \tab Relative river size, logarithm of either Q2 or DA
+     depending on user specified \code{weight}\cr
   state \tab character \tab State name\cr
+  county \tab character \tab County name\cr
   flood \tab character \tab Flood magnitude category based on peak }
 
   If output = "county" a data frame with the following columns is returned:
@@ -57,9 +66,9 @@ A data frame with output at either the gage or county level,
   Name \tab Type \tab Description\cr
   county \tab character \tab County name\cr
   state \tab character \tab State name\cr
-  num_gages \tab numeric \tab Number of analyzed gages in county\cr
-  max_peak \tab numeric \tab Maximum observed flood ratio\cr
+  num_gage \tab numeric \tab Number of analyzed gages in county\cr
   avg_peak \tab numeric \tab Average flood ratio among county gages\cr
+  max_peak \tab numeric \tab Maximum observed flood ratio\cr
   minor \tab numeric \tab Percentage of gages at or above "minor" flood
      class (flood ratio > 1)\cr
   moderate \tab numeric \tab Percentage of gages at or above "moderate"

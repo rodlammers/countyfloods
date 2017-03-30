@@ -18,15 +18,21 @@ notation.}
 \value{
 A dataframe that gives the following variables for stream gages within
    the county and time range:
-   \itemize{
-   \item{agency_cd: }
-   \item{site_no: }
-   \item{station_nm: }
-   \item{site_tp_cd: }
-   \item{dec_lat_va: }
-   \item{dec_long_va: }
-   \item{county_cd: The five-digit FIPS code of the county in which the gage is located}
-   }
+
+\tabular{lll}{
+Name \tab Type \tab Description\cr
+agency_cd \tab character \tab Agency running the gage (typically will be the USGS)\cr
+site_no \tab character \tab USGS gage ID\cr
+station_nm \tab character \tab Name of the gage site\cr
+site_tp_cd \tab character \tab Type of gage (should always be "ST" for stream)\cr
+dec_lat_va \tab numeric \tab Latitude of the gage site, in decimal degrees\cr
+dec_long_va \tab numeric \tab Longitude of the gage site, in decimal degrees\cr
+county_cd \tab character \tab Five-digit FIPS code of gage county location\cr
+DA \tab numeric \tab Drainage area of the gage, in square miles\cr
+}
+
+ Note that the returned object is the same as that returned by the \code{whatNWISsites} funtion
+ in the \code{dataRetrieval} package, but with county FIPS added for each gage.
 }
 \description{
 Pulls gage numbers of all gages with discharge data within a county and
@@ -40,6 +46,7 @@ va_counties <- get_county_cd("Virginia")
 va_gages <- get_gages(va_counties, start_date = "2015-01-01",
                       end_date = "2015-12-31")
 # Equivalent with piping
+library(dplyr)
 va_gages <- get_county_cd("Virginia") \%>\%
    get_gages(start_date = "2015-01-01", end_date = "2015-12-31")
 

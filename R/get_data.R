@@ -11,15 +11,19 @@
 #'
 #' @return A dataframe that gives the following variables for stream gages within
 #'    the county and time range:
-#'    \itemize{
-#'    \item{\textbf{agency_cd:} Agency running the gage (typically will be the USGS)}
-#'    \item{\textbf{site_no:} Gage site ID number}
-#'    \item{\textbf{station_nm:} Name of the gage site}
-#'    \item{\textbf{site_tp_cd:} Type of gage}
-#'    \item{\textbf{dec_lat_va:} Latitude of the gage site, in decimal degrees}
-#'    \item{\textbf{dec_long_va:} Longitude of the gage site, in decimal degrees}
-#'    \item{\textbf{county_cd:} The five-digit FIPS code of the county in which the gage is located}
-#'    }
+#'
+#' \tabular{lll}{
+#' Name \tab Type \tab Description\cr
+#' agency_cd \tab character \tab Agency running the gage (typically will be the USGS)\cr
+#' site_no \tab character \tab USGS gage ID\cr
+#' station_nm \tab character \tab Name of the gage site\cr
+#' site_tp_cd \tab character \tab Type of gage (should always be "ST" for stream)\cr
+#' dec_lat_va \tab numeric \tab Latitude of the gage site, in decimal degrees\cr
+#' dec_long_va \tab numeric \tab Longitude of the gage site, in decimal degrees\cr
+#' county_cd \tab character \tab Five-digit FIPS code of gage county location\cr
+#' DA \tab numeric \tab Drainage area of the gage, in square miles\cr
+#' }
+#'
 #'  Note that the returned object is the same as that returned by the \code{whatNWISsites} funtion
 #'  in the \code{dataRetrieval} package, but with county FIPS added for each gage.
 #'
@@ -31,6 +35,7 @@
 #' va_gages <- get_gages(va_counties, start_date = "2015-01-01",
 #'                       end_date = "2015-12-31")
 #' # Equivalent with piping
+#' library(dplyr)
 #' va_gages <- get_county_cd("Virginia") %>%
 #'    get_gages(start_date = "2015-01-01", end_date = "2015-12-31")
 #'
@@ -60,7 +65,7 @@ get_gages <- function(county_cd, start_date, end_date){
     dplyr::distinct_()
 
   #Get gage attributes and add drainage area and county code to data frame
-  gage_attr <- get_gage_attributes(gages_df$site_no) %>%
+  gage_attr <- gage_attr <- dataRetrieval::readNWISsite(gages_df$site_no) %>%
     dplyr::select_(.dots = list("site_no", "state_cd", "county_cd", "drain_area_va"))
 
   #Match county code and drainage area to each gage
@@ -132,6 +137,7 @@ gage_extract <- function(county_cd, start_date, end_date){
 #'                                  start_date = "2000-01-01",
 #'                                  end_date = "2000-01-31")
 #'# Example using piping
+#' library(dplyr)
 #' miami_flow_data <- get_gages("12086", start_date = "2000-01-01",
 #'                                 end_date = "2009-12-31") %>%
 #'                    get_flow_data(start_date = "2000-01-01",
@@ -162,34 +168,9 @@ get_flow_data <- function(gages_df, start_date, end_date){
   #Combine into one data frame and keep only site_no, date, and discharge
   #columns
   flow_data <- dplyr::bind_rows(flow_data) %>%
-    dplyr::select(site_no, date, discharge)
+    dplyr::select_(~ site_no, ~ date, ~ discharge)
 
   return(flow_data)
-}
-
-#' Get attributes of gages
-#'
-#' This function will return general attributes of supplied gage numbers. These
-#' include (but aren't limited to) watershed drainage area (\code{drain_area_val}) at the gage and
-#' county FIPS code (\code{state_cd} and \code{county_cd}).
-#'
-#' @param site_no Character vector of USGS gage site numbers.
-#'
-#' @return A data frame with a variety of attributes for each gage. See
-#' \code{\link[dataRetrieval]{readNWISsites}} for a full list of returned
-#' values.
-#'
-#' @seealso \code{\link[dataRetrieval]{readNWISsite}}
-#'
-#' @examples
-#' gages <- get_gages("12086", start_date = "1988-01-01", end_date = "2015-01-01")
-#' get_gage_attributes(gages$site_no)
-#'
-#' @export
-get_gage_attributes <- function(site_no) {
-
-  gage_attr <- dataRetrieval::readNWISsite(site_no)
-
 }
 
 #' Get all FIPS county codes within a state

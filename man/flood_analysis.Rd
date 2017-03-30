@@ -5,7 +5,7 @@
 \title{Compute flood statistics}
 \usage{
 flood_analysis(flow_data, peaks, gages, county_cd, q2_val = data.frame(site_no
-  = "", q2 = NA, stringsAsFactors = FALSE), threshold)
+  = "", q2 = NA, stringsAsFactors = FALSE), threshold, weight = "Q2")
 }
 \arguments{
 \item{flow_data}{A data frame with discharge data for each USGS gage found
@@ -26,6 +26,10 @@ to compare relative sizes of streams at gage locations}
 \item{threshold}{Character string of the flood threshold to be used in the
 analysis (either "Q2" or "NWS"). Used to determine which type of summary
 statistics to compute.}
+
+\item{weight}{Character string of variable to be used to scale by river size
+for weighted averages and scaling point sizes on maps. Options are median
+annual flood ("Q2") or drainage area ("DA"). Defaults to "Q2".}
 }
 \value{
 A data frame with the following columns:
@@ -39,7 +43,10 @@ avg_peak \tab numeric \tab Mean flood ratio for date range (discharge/flood thre
 flood_dur \tab numeric \tab Number of days in date range discharge above flood threshold\cr
 max_peak \tab numeric \tab Maximum value of flood ratio for date range (discharge/flood threshold)\cr
 num_missing \tab numeric \tab Number of days with missing discharge data from input date range\cr
-size \tab numeric \tab Metric of the relative size of the river (logarithm of median annual flood)\cr
+Q2 \tab numeric \tab Median annual discharge (cubic feet per second)\cr
+DA \tab numeric \tab Drainage area of the gage (square miles)\cr
+size \tab numeric \tab Relative river size, logarithm of either Q2 or DA
+     depending on user specified \code{weight}\cr
 state \tab character \tab State name\cr
 county \tab character \tab County name\cr
 flood \tab character \tab Flood magnitude category based on peak
@@ -57,6 +64,6 @@ va_flow_data <- get_flow_data(va_gages, start_date = "2015-01-01",
                       end_date = "2015-12-31")
 va_peaks <- find_q2(va_gages$site_no)
 va_stats <- flood_analysis(flow_data = va_flow_data, peaks = va_peaks,
-                       gages = va_gages)
+                       gages = va_gages, county_cd = va_counties, threshold = "Q2")
 
 }

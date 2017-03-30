@@ -9,6 +9,8 @@ county_aggregates2(flood_stats, county_cd)
 \arguments{
 \item{flood_stats}{Data frame of gage-level output from \code{flood_analysis}
 function.}
+
+\item{county_cd}{Character vector with the county FIPS code(s)}
 }
 \value{
 A data frame with the following columns:
@@ -19,7 +21,7 @@ A data frame with the following columns:
   end_date \tab date \tab Input end date\cr
   county \tab character \tab County name\cr
   state \tab character \tab State name\cr
-  num_gages \tab numeric \tab Number of analyzed gages in county\cr
+  num_gage \tab numeric \tab Number of analyzed gages in county\cr
   max_peak \tab numeric \tab Maximum observed flood ratio\cr
   avg_peak \tab numeric \tab Average flood ratio among county gages\cr
   minor \tab numeric \tab Percentage of gages at or above "minor" flood
@@ -36,13 +38,12 @@ A data frame with the following columns:
 If threshold = "NWS", the columns "minor", "moderate", "major", and "extreme"
 are replaced with two columns: "no_flood" and "yes_flood" which show the
 percentage of gages in the county with or without flooding.
+
+
+Internal function used within \code{long_term_flood} function.
 }
 \description{
 Function aggregates gage-level output into county-level output. This is
 the same as the \code{county_aggregates} function but it summarizes by
 county and date range instead of just county.
-}
-\examples{
-Internal function used within \\code{long_term_flood} function.
-
 }

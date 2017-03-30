@@ -9,6 +9,8 @@ county_aggregates(flood_stats, county_cd)
 \arguments{
 \item{flood_stats}{Data frame of gage-level output from \code{flood_analysis}
 function.}
+
+\item{county_cd}{Character vector with the county FIPS code(s)}
 }
 \value{
 A data frame with the following columns:
@@ -16,9 +18,9 @@ A data frame with the following columns:
 Name \tab Type \tab Description\cr
 county \tab character \tab County name\cr
 state \tab character \tab State name\cr
-num_gages \tab numeric \tab Number of analyzed gages in county\cr
-max_peak \tab numeric \tab Maximum observed flood ratio\cr
+num_gage \tab numeric \tab Number of analyzed gages in county\cr
 avg_peak \tab numeric \tab Average flood ratio among county gages\cr
+max_peak \tab numeric \tab Maximum observed flood ratio\cr
 minor \tab numeric \tab Percentage of gages at or above "minor" flood class (flood ratio > 1)\cr
 moderate \tab numeric \tab Percentage of gages at or above "moderate" flood class (flood ratio > 1.5)\cr
 major \tab numeric \tab Percentage of gages at or above "major" flood class (flood ratio > 2)\cr
@@ -40,9 +42,9 @@ va_gages <- get_gages(va_counties, start_date = "2015-01-01",
                       end_date = "2015-12-31")
 va_flow_data <- get_flow_data(va_gages, start_date = "2015-01-01",
                       end_date = "2015-12-31")
-va_peaks <- find_Q2(va_gages$gage_no)
+va_peaks <- find_q2(va_gages$site_no)
 va_stats <- flood_analysis(flow_data = va_flow_data, peaks = va_peaks,
-                       gages = va_gages)
+                       gages = va_gages, county_cd = va_counties, threshold = "Q2")
 va_county_stats <- county_aggregates(flood_stats = va_stats)
 
 }

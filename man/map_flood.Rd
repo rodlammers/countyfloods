@@ -7,8 +7,8 @@
 map_flood(flood_stats, category = "minor")
 }
 \arguments{
-\item{flood_stats}{Data frame of flood analysis results, output of
-\code{run_flood} function.}
+\item{flood_stats}{Either a data frame of flood analysis results, by gage or by county,
+or a list of both data frames.}
 
 \item{category}{Character string of the flood magnitude category to be used
 for mapping (one of "minor", "moderate", "major", or "extreme"). This

@@ -33,6 +33,7 @@ miami_flow_data <- get_flow_data(gages_df = miami_gages,
                                  start_date = "2000-01-01",
                                  end_date = "2000-01-31")
 # Example using piping
+library(dplyr)
 miami_flow_data <- get_gages("12086", start_date = "2000-01-01",
                                 end_date = "2009-12-31") \%>\%
                    get_flow_data(start_date = "2000-01-01",

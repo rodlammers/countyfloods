@@ -4,7 +4,8 @@
 \alias{long_term_flood}
 \title{Return flood metrics by county codes for a data frame input}
 \usage{
-long_term_flood(input_df, threshold = "Q2", flood_type = "flood")
+long_term_flood(input_df, threshold = "Q2", flood_type = "flood",
+  weight = "Q2")
 }
 \arguments{
 \item{input_df}{Data frame with three columns: \code{county_cd},
@@ -15,6 +16,10 @@ analysis (either "Q2" or "NWS"). Defaults to "Q2".}
 
 \item{flood_type}{Character string of the defined flood type based on NWS
 classifications (one of "action", "flood", "moderate", or "major")}
+
+\item{weight}{Character string of variable to be used to scale by river size
+for weighted averages and scaling point sizes on maps. Options are median
+annual flood ("Q2") or drainage area ("DA"). Defaults to "Q2"}
 }
 \value{
 A list with two data frames summarizing data by gage and by county.
@@ -37,7 +42,10 @@ A list with two data frames summarizing data by gage and by county.
      range (discharge/flood threshold)\cr
   num_missing \tab numeric \tab Number of days in given date
      range with no discharge data at that gage\cr
-  size \tab numeric \tab Metric of the relative size of the river (logarithm of median annual flood)\cr
+  Q2 \tab numeric \tab Median annual discharge (cubic feet per second)\cr
+  DA \tab numeric \tab Drainage area of the gage (square miles)\cr
+  size \tab numeric \tab Relative river size, logarithm of either Q2 or DA
+     depending on user specified \code{weight}\cr
   state \tab character \tab State name\cr
   county \tab character \tab County name\cr
   flood \tab character \tab Flood magnitude category based on peak }
@@ -51,7 +59,7 @@ A list with two data frames summarizing data by gage and by county.
   end_date \tab date \tab Input end date\cr
   county \tab character \tab County name\cr
   state \tab character \tab State name\cr
-  num_gages \tab numeric \tab Number of analyzed gages in county\cr
+  num_gage \tab numeric \tab Number of analyzed gages in county\cr
   max_peak \tab numeric \tab Maximum observed flood ratio\cr
   avg_peak \tab numeric \tab Average flood ratio among county gages\cr
   minor \tab numeric \tab Percentage of gages at or above "minor" flood

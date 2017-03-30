@@ -18,6 +18,9 @@
 #'   classifications (one of "action", "flood", "moderate", or "major")
 #' @param output Character string of output summary type (either "gage",
 #'   "county", or "both"). Defaults to "both".
+#' @param weight Character string of variable to be used to scale by river size
+#'   for weighted averages and scaling point sizes on maps. Options are median
+#'   annual flood ("Q2") or drainage area ("DA"). Defaults to "Q2".
 #'
 #' @return A data frame with output at either the gage or county level,
 #'   depending on the value of "output". If output = "gage" a data frame with
@@ -26,19 +29,23 @@
 #'   \tabular{lll}{
 #'   Name \tab Type \tab Description\cr
 #'   site_no \tab character \tab USGS gage ID\cr
+#'   county_cd \tab character \tab FIPS code of gage county location\cr
+#'   lat \tab numeric \tab Gage latitude\cr
+#'   long \tab numeric \tab Gage longitude\cr
 #'   avg_peak \tab numeric \tab Mean flood ratio for date range
 #'      (discharge/flood threshold)\cr
 #'   flood_dur \tab numeric \tab Number of days in date range
 #'      discharge above flood threshold\cr
-#'   peak \tab numeric \tab Maximum value of flood ratio for date
+#'   max_peak \tab numeric \tab Maximum value of flood ratio for date
 #'      range (discharge/flood threshold)\cr
 #'   num_missing \tab numeric \tab Number of days in given date
 #'      range with no discharge data at that gage\cr
-#'   lat \tab numeric \tab Gage latitude\cr
-#'   long \tab numeric \tab Gage longitude\cr
-#'   county_cd \tab character \tab FIPS code of gage county location\cr
-#'   county \tab character \tab County name\cr
+#'   Q2 \tab numeric \tab Median annual discharge (cubic feet per second)\cr
+#'   DA \tab numeric \tab Drainage area of the gage (square miles)\cr
+#'   size \tab numeric \tab Relative river size, logarithm of either Q2 or DA
+#'      depending on user specified \code{weight}\cr
 #'   state \tab character \tab State name\cr
+#'   county \tab character \tab County name\cr
 #'   flood \tab character \tab Flood magnitude category based on peak }
 #'
 #'   If output = "county" a data frame with the following columns is returned:
@@ -47,9 +54,9 @@
 #'   Name \tab Type \tab Description\cr
 #'   county \tab character \tab County name\cr
 #'   state \tab character \tab State name\cr
-#'   num_gages \tab numeric \tab Number of analyzed gages in county\cr
-#'   max_peak \tab numeric \tab Maximum observed flood ratio\cr
+#'   num_gage \tab numeric \tab Number of analyzed gages in county\cr
 #'   avg_peak \tab numeric \tab Average flood ratio among county gages\cr
+#'   max_peak \tab numeric \tab Maximum observed flood ratio\cr
 #'   minor \tab numeric \tab Percentage of gages at or above "minor" flood
 #'      class (flood ratio > 1)\cr
 #'   moderate \tab numeric \tab Percentage of gages at or above "moderate"
@@ -96,6 +103,7 @@ run_flood <- function(county_cd = NULL, state = NULL, start_date, end_date, thre
   output <- tolower(output)
   if(output != "gage" & output != "county" &
      output != "both") stop("output must be one of 'gage', 'county', or 'both'")
+  if(weight != "Q2" & weight != "DA") stop("weight must be either 'Q2' or 'DA'")
 
   #Determine if county codes or state name was provided. If state name given,
   #find all county codes in the state
@@ -153,6 +161,9 @@ run_flood <- function(county_cd = NULL, state = NULL, start_date, end_date, thre
 #'   analysis (either "Q2" or "NWS"). Defaults to "Q2".
 #' @param flood_type Character string of the defined flood type based on NWS
 #'   classifications (one of "action", "flood", "moderate", or "major")
+#' @param weight Character string of variable to be used to scale by river size
+#'   for weighted averages and scaling point sizes on maps. Options are median
+#'   annual flood ("Q2") or drainage area ("DA"). Defaults to "Q2"
 #'
 #' @return A list with two data frames summarizing data by gage and by county.
 #'
@@ -174,7 +185,10 @@ run_flood <- function(county_cd = NULL, state = NULL, start_date, end_date, thre
 #'      range (discharge/flood threshold)\cr
 #'   num_missing \tab numeric \tab Number of days in given date
 #'      range with no discharge data at that gage\cr
-#'   size \tab numeric \tab Metric of the relative size of the river (logarithm of median annual flood)\cr
+#'   Q2 \tab numeric \tab Median annual discharge (cubic feet per second)\cr
+#'   DA \tab numeric \tab Drainage area of the gage (square miles)\cr
+#'   size \tab numeric \tab Relative river size, logarithm of either Q2 or DA
+#'      depending on user specified \code{weight}\cr
 #'   state \tab character \tab State name\cr
 #'   county \tab character \tab County name\cr
 #'   flood \tab character \tab Flood magnitude category based on peak }
@@ -188,7 +202,7 @@ run_flood <- function(county_cd = NULL, state = NULL, start_date, end_date, thre
 #'   end_date \tab date \tab Input end date\cr
 #'   county \tab character \tab County name\cr
 #'   state \tab character \tab State name\cr
-#'   num_gages \tab numeric \tab Number of analyzed gages in county\cr
+#'   num_gage \tab numeric \tab Number of analyzed gages in county\cr
 #'   max_peak \tab numeric \tab Maximum observed flood ratio\cr
 #'   avg_peak \tab numeric \tab Average flood ratio among county gages\cr
 #'   minor \tab numeric \tab Percentage of gages at or above "minor" flood
@@ -220,14 +234,21 @@ run_flood <- function(county_cd = NULL, state = NULL, start_date, end_date, thre
 #' #Using NWS values
 #' VA_floods <- long_term_flood(input_df, threshold = "NWS")
 #'
+#' @importFrom dplyr %>%
+#'
 #' @export
 long_term_flood <- function(input_df, threshold = "Q2",
-                            flood_type = "flood") {
+                            flood_type = "flood", weight = "Q2") {
 
   #Check inputs and return error messages as necessary
   if(!is.character(input_df$county_cd) | !is.character(input_df$start_date) |
       !is.character(input_df$end_date))
     stop("input_df must have characters, not factors (see data.frame(stringsAsFactors = FALSE))")
+  if(threshold != "Q2" & threshold != "NWS") stop("threshold must be set to either 'Q2' or 'NWS'")
+  flood_type <- tolower(flood_type)
+  if(flood_type != "action" & flood_type != "flood" & flood_type != "moderate" &
+     flood_type != "major") stop("flood_type must be one of 'action', 'flood', 'moderate', or 'major'")
+  if(weight != "Q2" & weight != "DA") stop("weight must be either 'Q2' or 'DA'")
 
   #get all gages and necessary flow data
   min_date <- min(as.Date(input_df$start_date))
@@ -264,7 +285,8 @@ long_term_flood <- function(input_df, threshold = "Q2",
 
 
     flood_stats <- flood_analysis(flow_data = flow_data_new, peaks = peaks, gages = gages,
-                                  county_cd = county_cd, q2_val = q2_val, threshold = threshold)
+                                  county_cd = county_cd, q2_val = q2_val, threshold = threshold,
+                                  weight = weight)
 
     return(flood_stats)
   }
@@ -272,7 +294,11 @@ long_term_flood <- function(input_df, threshold = "Q2",
   flood_stats <- input_df %>%
     plyr::mdply(.fun = flood_analysis_loop, flow_data = flow_data,
                  peaks = peaks, gages = gages, q2_val = q2_val, threshold = threshold) %>%
-    dplyr::arrange_(~ county)
+    dplyr::arrange_(~ county) %>%
+    dplyr::select_(~ site_no, ~ dplyr::everything())
+
+#   flood_stats <- flood_stats
+#     subset(select = c(site_no, start_date:flood))
 
   #summarize by date range and county
   county_stats <- county_aggregates2(flood_stats = flood_stats, county_cd = county_cd_simple)
@@ -301,6 +327,14 @@ long_term_flood <- function(input_df, threshold = "Q2",
 #'   analysis (either "Q2" or "NWS"). Defaults to "Q2".
 #' @param flood_type Character string of the defined flood type based on NWS
 #'   classifications (one of "action", "flood", "moderate", or "major")
+#' @param weight Character string of variable to be used to scale by river size
+#'   for weighted averages and scaling point sizes on maps. Options are median
+#'   annual flood ("Q2") or drainage area ("DA"). Defaults to "Q2".
+#' @param Q2_magnitude Character string of ratio of daily streamflow to Q2 used
+#'   as a binary flood threshold. One of "Minor" (1 < Flow / Q2 < 1.5), "Moderate" (< 2),
+#'   "Major" (< 5), and "Extreme" (> 5). Defaults to "Moderate".
+#' @param filter_data Logical. If TRUE only dates with a flood occurring are returned for
+#'   both gage and county-level data. If FALSE, all dates are returned.
 #'
 #' @return A list with two data frames, summarizing the results by gage and by county:
 #'
@@ -309,12 +343,16 @@ long_term_flood <- function(input_df, threshold = "Q2",
 #' Name \tab Type \tab Description\cr
 #' site_no \tab character \tab USGS gage ID\cr
 #' date \tab date \tab Date of observation\cr
-#' discharge \tab numeric \tab Observed mean daily discharge (cubic feet per second)\cr
 #' lat \tab numeric \tab Gage latitude\cr
 #' long \tab numeric \tab Gage longitude\cr
 #' county_cd \tab character \tab FIPS code of gage county location\cr
-#' size \tab numeric \tab Metric of the relative size of the river (logarithm of median annual flood)\cr
-#' flood_ratio \tab numeric \tab Metric of the observed discharge divided by the defined flood threshold\cr
+#' Q2 \tab numeric \tab Median annual discharge (cubic feet per second)\cr
+#' DA \tab numeric \tab Drainage area of the gage (square miles)\cr
+#' size \tab numeric \tab Relative river size, logarithm of either Q2 or DA
+#'      depending on user specified \code{weight}\cr
+#' discharge \tab numeric \tab Observed mean daily discharge (cubic feet per second)\cr
+#' flood_val \tab numeric \tab Selected threshold flood value. Either Q2 or an NWS flood threshold.\cr
+#' flood_ratio \tab numeric \tab Ratio of the observed discharge divided by the defined flood threshold\cr
 #' state \tab character \tab State name\cr
 #' county \tab character \tab County name\cr
 #' flood \tab character \tab Flood magnitude category based on peak
@@ -326,13 +364,15 @@ long_term_flood <- function(input_df, threshold = "Q2",
 #' date \tab date \tab Date of observation\cr
 #' county \tab character \tab County name\cr
 #' state \tab character \tab State name\cr
-#' num_gages \tab numeric \tab Number of analyzed gages in county\cr
+#' num_gage \tab numeric \tab Number of analyzed gages in county\cr
 #' max_peak \tab numeric \tab Maximum observed flood ratio\cr
 #' avg_peak \tab numeric \tab Average flood ratio among county gages\cr
 #' minor \tab numeric \tab Percentage of gages at or above "minor" flood class (flood ratio > 1)\cr
 #' moderate \tab numeric \tab Percentage of gages at or above "moderate" flood class (flood ratio > 1.5)\cr
 #' major \tab numeric \tab Percentage of gages at or above "major" flood class (flood ratio > 2)\cr
 #' extreme \tab numeric \tab Percentage of gages at or above "extreme" flood class (flood ratio > 5)\cr
+#' flood_metric \tab numeric \tab Fraction of gages in county experiencing a flood, weighted by river size
+#'      (\code{size} from gage-level output)
 #' }
 #'
 #' If threshold = "NWS", the columns "minor", "moderate", "major", and "extreme"
@@ -353,6 +393,21 @@ long_term_flood <- function(input_df, threshold = "Q2",
 time_series_flood <- function(county_cd = NULL, state = NULL, start_date, end_date,
                               threshold = "Q2", flood_type = "flood", weight = "Q2",
                               Q2_magnitude = "Moderate", filter_data = TRUE) {
+
+
+  #Check inputs and return error messages as necessary
+  if(!is.character(county_cd) & !is.null(county_cd)) stop("Input county_cd must be a character")
+  if(!is.character(state) & !is.null(state)) stop("Input state must be a character")
+  if(is.null(county_cd) & is.null(state)) stop("must specify either county_cd or state")
+  if(threshold != "Q2" & threshold != "NWS") stop("threshold must be set to either 'Q2' or 'NWS'")
+  flood_type <- tolower(flood_type)
+  if(flood_type != "action" & flood_type != "flood" & flood_type != "moderate" &
+     flood_type != "major") stop("flood_type must be one of 'action', 'flood', 'moderate', or 'major'")
+  if(weight != "Q2" & weight != "DA") stop("weight must be either 'Q2' or 'DA'")
+  Q2_magnitude <- tolower(Q2_magnitude)
+  if(Q2_magnitude != "minor" & Q2_magnitude != "moderate" & Q2_magnitude != "major" &
+     Q2_magnitude != "extreme") stop("Q2_magnitude must be one of 'minor', 'moderate', 'major', or 'extreme'")
+  if(!is.logical(filter_data)) stop("filter_data must be TRUE or FALSE")
 
   #Determine if county codes or state name was provided. If state name given,
   #find all county codes in the state

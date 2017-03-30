@@ -7,8 +7,7 @@
 map_gage(flood_stats)
 }
 \arguments{
-\item{flood_stats}{Data frame of flood analysis results, output of
-\code{run_flood} function.}
+\item{flood_stats}{Data frame of flood analysis results, by gage.}
 }
 \value{
 A map of USGS gages color coded by maximum flood magnitude.

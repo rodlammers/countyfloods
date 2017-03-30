@@ -5,7 +5,8 @@
 \title{Return a time series of flood metrics by county codes or state names}
 \usage{
 time_series_flood(county_cd = NULL, state = NULL, start_date, end_date,
-  threshold = "Q2", flood_type = "flood")
+  threshold = "Q2", flood_type = "flood", weight = "Q2",
+  Q2_magnitude = "Moderate", filter_data = TRUE)
 }
 \arguments{
 \item{county_cd}{Character vector with the county FIPS code(s)}
@@ -24,6 +25,17 @@ analysis (either "Q2" or "NWS"). Defaults to "Q2".}
 
 \item{flood_type}{Character string of the defined flood type based on NWS
 classifications (one of "action", "flood", "moderate", or "major")}
+
+\item{weight}{Character string of variable to be used to scale by river size
+for weighted averages and scaling point sizes on maps. Options are median
+annual flood ("Q2") or drainage area ("DA"). Defaults to "Q2".}
+
+\item{Q2_magnitude}{Character string of ratio of daily streamflow to Q2 used
+as a binary flood threshold. One of "Minor" (1 < Flow / Q2 < 1.5), "Moderate" (< 2),
+"Major" (< 5), and "Extreme" (> 5). Defaults to "Moderate".}
+
+\item{filter_data}{Logical. If TRUE only dates with a flood occurring are returned for
+both gage and county-level data. If FALSE, all dates are returned.}
 }
 \value{
 A list with two data frames, summarizing the results by gage and by county:
@@ -33,12 +45,16 @@ Gage:
 Name \tab Type \tab Description\cr
 site_no \tab character \tab USGS gage ID\cr
 date \tab date \tab Date of observation\cr
-discharge \tab numeric \tab Observed mean daily discharge (cubic feet per second)\cr
 lat \tab numeric \tab Gage latitude\cr
 long \tab numeric \tab Gage longitude\cr
 county_cd \tab character \tab FIPS code of gage county location\cr
-size \tab numeric \tab Metric of the relative size of the river (logarithm of median annual flood)\cr
-flood_ratio \tab numeric \tab Metric of the observed discharge divided by the defined flood threshold\cr
+Q2 \tab numeric \tab Median annual discharge (cubic feet per second)\cr
+DA \tab numeric \tab Drainage area of the gage (square miles)\cr
+size \tab numeric \tab Relative river size, logarithm of either Q2 or DA
+     depending on user specified \code{weight}\cr
+discharge \tab numeric \tab Observed mean daily discharge (cubic feet per second)\cr
+flood_val \tab numeric \tab Selected threshold flood value. Either Q2 or an NWS flood threshold.\cr
+flood_ratio \tab numeric \tab Ratio of the observed discharge divided by the defined flood threshold\cr
 state \tab character \tab State name\cr
 county \tab character \tab County name\cr
 flood \tab character \tab Flood magnitude category based on peak
@@ -50,13 +66,15 @@ Name \tab Type \tab Description\cr
 date \tab date \tab Date of observation\cr
 county \tab character \tab County name\cr
 state \tab character \tab State name\cr
-num_gages \tab numeric \tab Number of analyzed gages in county\cr
+num_gage \tab numeric \tab Number of analyzed gages in county\cr
 max_peak \tab numeric \tab Maximum observed flood ratio\cr
 avg_peak \tab numeric \tab Average flood ratio among county gages\cr
 minor \tab numeric \tab Percentage of gages at or above "minor" flood class (flood ratio > 1)\cr
 moderate \tab numeric \tab Percentage of gages at or above "moderate" flood class (flood ratio > 1.5)\cr
 major \tab numeric \tab Percentage of gages at or above "major" flood class (flood ratio > 2)\cr
 extreme \tab numeric \tab Percentage of gages at or above "extreme" flood class (flood ratio > 5)\cr
+flood_metric \tab numeric \tab Fraction of gages in county experiencing a flood, weighted by river size
+     (\code{size} from gage-level output)
 }
 
 If threshold = "NWS", the columns "minor", "moderate", "major", and "extreme"

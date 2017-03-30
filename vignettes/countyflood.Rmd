@@ -40,6 +40,8 @@ va_gages <- get_county_cd("Virginia") %>%
 head(va_gages)
 ```
 
+The function sends county-by-county requests to the USGS water services server (https://waterservices.usgs.gov) and, if there are data for gages within that county, returns that data and adds it to the dataframe returned by the function. This function may result in a message about a 404 HTTP status for some counties. This means that no data was found for one of the counties being queried but will not affect proper running of the function for other counties. Internally, this function uses the `whatNWISsites` function from the  package, `dataRetrieval`, but adds the county FIPS code for each gage, allowing users to join gage data with other data identified by county FIPS. This function also uses the `readNWISsites` function from the `dataRetrieval` package to obtain the drainage area of the watershed at the selected gage. This can be used as a proxy for relative river size.
+
 Once you have a list of gage numbers for which you would like to pull flow data, you can use the `get_flow_data` function to pull that data. For example, to pull data for all the stream gage flow data for 1999 for gages in Southhampton County, VA (FIPS code 51175), you can run: 
 
 ```{r}
@@ -49,46 +51,47 @@ southampton_data <- get_flow_data(southampton_gages, start_date = "1999-01-01",
                                   end_date = "1999-12-31")
 ```
 
-The output from `get_flow_data` is a list with as many elements as there are gages with non-missing data: 
-
-```{r}
-class(southampton_data)
-length(southampton_data)
-```
-
-Each element of this list gives streamflow data for one of the gages: 
+The output from `get_flow_data` is a data frame with daily streamflow for the queried gages over the requested dates. The data frame has three columns: "site_no" = gage number, "date" = date
+of observation, and "discharge" = mean daily flow in cubic feet per second (USGS parameter code 00060): 
 
 ```{r}
 head(southampton_data)
 ```
 
-```{r fig.width = 6, fig.height = 3.5}
+```{r fig.width = 7, fig.height = 3.25}
 library(ggplot2)
 ggplot(southampton_data, aes(x = date, y = discharge, color = site_no)) + 
-  geom_line()
+  geom_line() + theme_classic() + 
+  labs(y = "mean daily flow (cubic ft / s)", color = "gage site #")
 ```
 
-To determine when a flood occurred, we need a value to classify a "flood" for each stream gage.
+To determine when a flood occurred, we need a value to determine a gage-specific value of streamflow that consitutes a "flood". Expected streamflow values vary substantially from gage to gage, so it is criticial to determine a sensible threshold for each gage included in a study before trying to identify floods at each gage. 
 
-One way to get this is with the `find_nws` function, which gets the National Weather Service flood value when available for a gage site. For example, for the Virginia gages: 
+One way to get gage-specific flood thresholds is with the `find_nws` function, which gets the National Weather Service flood discharge threshold, when available, for a gage site. Note there are four NWS thresholds for each gage, representing cutoffs for different levels of floods: "Action", "Flood", "Moderate", and "Major". These thresholds are available through the Advanced Hydrologic Prediction Service's "River Stage" information. They are originally in feet for stages, which we convert to streamflow (in cubic feet per second) using USGS rating tables for each gage (pulled using the `readNWISrating` function from the `dataRetrieval` package). 
+
+Gages may have some, all, or none of these NWS flood thresholds available. If a gage does not have any of the four thresholds, it is excluded from the outpout of the `find_nws` function. For example, to get "Moderate" flood thresholds for the Virginia gages, you can run: 
 
 ```{r}
 va_nws <- find_nws(site_no = va_gages$site_no, type = "moderate")
 head(va_nws)
-dim(va_nws)
+summary(va_nws$flood_val)
 ```
 
-Another way is with the `find_q2` function:
+Many USGS gages do not have NWS flood thresholds for any of the four categories of floods. For example, out of the `r nrow(va_gages)` gages pulled for Virginia for `va_gages`, only `r nrow(va_nws)` have one or more NWS flood thresholds. Therefore, use of the NWS flood thresholds to identify floods may severely limit the sample size of the data output. 
+
+Another way to get gage-specific flood thresholds is with the `find_q2` function, which calculates the median annual flood for each gage using a minimum of 20 years of USGS annual peak flow data:
 
 ```{r}
 va_q2 <- find_q2(site_no = va_gages$site_no)
 head(va_q2)
-dim(va_q2)
+summary(va_q2$flood_val)
 ```
 
-You can compare the results from these two methods for sites where you can get both values: 
+For the Q2 flood threshold, `r nrow(va_q2)` of the gages in Virginia have flood threshold values. 
 
-```{r fig.width = 4, fig.height = 3.5, fig.align = "center"}
+You can compare the results from these two methods for sites where you can get both values (note that both axes are shown on a log-10 scale): 
+
+```{r fig.width = 4.25, fig.height = 3.5, fig.align = "center"}
 va_flood_stage <- va_nws %>%
   rename(flood_nws = flood_val) %>%
   inner_join(va_q2, by = "site_no") %>%
@@ -96,34 +99,71 @@ va_flood_stage <- va_nws %>%
 ggplot(va_flood_stage, aes(x = flood_q2, y = flood_nws)) + 
   geom_point(alpha = 0.5) + 
   geom_abline(aes(intercept = 0, slope = 1), linetype = 3) + 
-  geom_smooth(method = "lm", se = FALSE)
+  geom_smooth(method = "lm", se = FALSE) + 
+  scale_x_log10(labels = scales::comma) + scale_y_log10(labels = scales::comma) + 
+  labs(x = "Streamflow threshold for\nflood based on USGS Q2",
+       y = "Streamflow threshold for flood based\non NWS flood height thresholds") + 
+  theme_classic() + 
+  expand_limits(x = c(min(va_flood_stage$flood_q2, va_flood_stage$flood_nws),
+                      max(va_flood_stage$flood_q2, va_flood_stage$flood_nws)),
+                y = c(min(va_flood_stage$flood_q2, va_flood_stage$flood_nws),
+                      max(va_flood_stage$flood_q2, va_flood_stage$flood_nws)))
 ```
 
-For the Virginia monitors, you can see that the flood values from NWS and the Q2 method are well-correlated, although NWS values tend to be consistently higher than Q2 values.
+For the Virginia monitors, you can see that the flood values from the "moderate" NWS flood heights and the Q2 method are well-correlated, although NWS values tend to be consistently higher than Q2 values.
 
-Once you have data on gages, flood values, and flow data, you can use the `flood_analysis` function to get flood summaries by site. For example, to get flood summary statistics by gage for the Virginia gages, you can run: 
+Whichever flood threshold you pick, it can be joined to the time series streamflow data obtained with the `get_flow_data` function, and flood status can be determined on each day based on whether streamflow that day exceeded the threshold. For example, the following code can be used to add a binary `flood` variable to the streamflow data pulled earlier for Southampton County, VA:
 
 ```{r}
+southampton_q2 <- find_q2(site_no = southampton_gages$site_no)
+southampton_data <- southampton_data %>% 
+  left_join(southampton_q2, by = "site_no") %>% 
+  select(-years) %>% 
+  mutate(flood = discharge >= flood_val)
+head(southampton_data)
+```
+
+Here are the time series for the two streamgages in the county, with horizontal lines added for the flood threshold used for each gage:
+
+```{r fig.width = 7, fig.height = 3.25}
+library(ggplot2)
+ggplot(southampton_data, aes(x = date, y = discharge)) + 
+  geom_line() + theme_classic() + 
+  geom_point(aes(color = flood), alpha = 0.5, size = 1.2) + 
+  facet_wrap(~ site_no, ncol = 1) +
+  geom_hline(data = southampton_q2, aes(yintercept = flood_val),
+             linetype = 3) +
+  labs(y = "mean daily flow (cubic ft / s)", color = "Flood status")
+```
+
+Once you have data on gages, flood values, and flow data, you can also get flood summaries by site over the selected date range using the `flood_analysis` function. For each site, this function calculates the average "peak" (ratio of observed discharge to flood threshold discharge), maximum peak, and number of days where a flood occured. It also classifies flood magnitude. If the NWS flood threshold is used, this is a simple binary of "Flood" or "No Flood". If the Q2 flood threshold is used, flood magnitude is classified based on "max_peak" value: "None" (<1), "Minor" (1-1.5), "Moderate" (1.5-2), "Major" (2-5), and "Extreme" (>5). For example, to get flood summary statistics by gage for the Virginia gages, you can run: 
+
+```{r}
+va_counties <- get_county_cd("Virginia")
 va_flow_data <- get_flow_data(va_gages, start_date = "2015-01-01",
                               end_date = "2015-12-31")
-va_floods <- flood_analysis(flow_data = va_flow_data, peaks = va_q2,
-                            gages = va_gages)
+va_floods <- flood_analysis(flow_data = va_flow_data, peaks = va_q2, 
+                            gages = va_gages, county_cd = va_counties,
+                            threshold = "Q2")
 head(va_floods, 3)
 ```
 
 ```{r fig.width = 6, fig.height = 3.5, fig.align = "center", message = FALSE}
-ggplot(va_floods, aes(x = peak, fill = flood)) + 
+ggplot(va_floods, aes(x = max_peak, fill = flood)) + 
   geom_histogram()
 ```
 
-There is also a function that will allow you to get county-level aggregate statistics from this gage-level summary: 
+There is also a function that will allow you to get county-level aggregate statistics from this gage-level summary.
+Any counties with no gages or for which the gages didn't have flow data or flood threshold values are also 
+included. If the Q2 flood threshold is used, this function gives the percentage of gages in the county in above each flood magnitude classification (e.g. "Minor", "Moderate", etc.): 
 
 ```{r}
 va_county_stats <- county_aggregates(flood_stats = va_floods)
 head(va_county_stats)
 ```
 
-You can use the `run_flood` function to put all of this together, and pull all flood summaries by either gage (`output = "gage"`), county (`output = "county"`), or both (`output = "both"`) for either a set of counties or all counties in a state.
+You can use the `run_flood` function to put all of this together, and pull all flood summaries by either gage (`output = "gage"`), county (`output = "county"`), or both (`output = "both"`) for either a set of counties or all counties in a state. It is more efficient to set (`output = "both"`) and then extract gage or county level data
+from the list than running each separately since pulling flow data is time consuming.
 
 For example, to get all the flood statistics by gage for all gages with available data in Virginia, you can run: 
 
@@ -143,38 +183,120 @@ fl_floods <- run_flood(state = "Florida", start_date = "2004-01-01",
 head(fl_floods)
 ```
 
-These output can be mapped using the `map_flood` function. If the data was collected by gage, this will show a point map with the flood level at each gage:
+These output can be mapped using the `map_flood` function. If the data was collected by gage, this will show a point map with the flood level at each gage. The size of the point corresponds to the size of the stream, based on either the median flood value (Q2) or the drainage area (DA). This defaults to Q2 but can be changed using the `weight` input to the `run_flood` function:
 
 ```{r fig.width = 8, fig.height = 3.5, fig.align = "center", message = FALSE}
 map_flood(va_floods) 
 ```
 
-For county-level data, this will create a choropleth indicating the percent of monitors in each county with flood magnitude above a user-specified flood category: 
+For county-level data, this will create a choropleth indicating the percent of gages in each county with flood magnitude above a user-specified flood category: "Low" (0-20%), "Moderate" (20-40%), "Moderate-High"" (40-60%), "High" (60-80%), and "Very High" (80-100%). 
 
-```{r fig.height = 3, fig.width = 4, fig.align = "center", message = FALSE}
+```{r fig.height = 3, fig.width = 4.5, fig.align = "center", message = FALSE}
 map_flood(fl_floods)
 map_flood(fl_floods, category = "major")
 ```
 
+The `long_term_flood` function is very similar to the `run_flood` function except it accepts a data frame as
+input with three columns: `county_cd`, `start_date`, and `end_date`. This allows you to analyze floods across multiple date ranges and multiple counties. For example, if we wanted to examine April flooding in three counties
+in northern Virginia we would create the following input data frame:
+
+```{r message = FALSE}
+county_cd <- c(rep("51013", 5), rep("51107", 5), rep("51059", 5))
+start_date <- rep(c("2010-04-01", "2011-04-01", "2012-04-01", "2013-04-01", "2014-04-01"), 3)
+end_date <- rep(c("2010-04-30", "2011-04-30", "2012-04-30", "2013-04-30", "2014-04-30"), 3)
+input_df <- data.frame(county_cd = county_cd, start_date = start_date, end_date = end_date, stringsAsFactors = FALSE)
+head(input_df)
+```
+
+It is important that these variables are character strings and not factors. The flood analysis can then be 
+performed:
+
+```{r message = FALSE}
+#With default values
+va_floods <- long_term_flood(input_df)
+va_gage_output <- va_floods[[1]]
+head(va_gage_output)
+va_county_output <- va_floods[[2]]
+head(va_county_output)
+```
+
+If you are interested in seeing when flooding occurred over a set time period, you can perform a time series
+analysis using the `time_series_flood` function. This has similar inputs to the `run_flood` function. This will
+also output a `flood_metric` value which is the fraction of gages in the county experiencing a flood on that date,
+weighted by river size. River size is calculated as either the logarithm of the median annual flood (Q2, the default) or as the logarithm of the drainage area. This can be changed using the `weight` input. For
+example, if you wanted to examine when flooding occurred in Virginia from 2010 to 2015:
+
+```{r message = FALSE}
+va_time_series <- time_series_flood(state = "Virginia", start_date = "2010-01-01",
+                      end_date = "2015-12-31", threshold = "NWS",
+                      flood_type = "flood", weight = "Q2")
+va_gage_output <- va_time_series[[1]]
+head(va_gage_output)
+va_county_output <- va_time_series[[2]]
+head(va_county_output)
+```
+
+The county-level output can be plotted using the `time_series_plot` function which shows bar charts of the
+timing and magnitude of floods during the selected time period. You can select values for `start_date` and `end_date` to change the x-limits on the plots or the default is to show the full time period including any 
+flood.
+
+```{r fig.height = 6, fig.width = 8, fig.align = "center", message = FALSE}
+time_series_plot(va_county_output)
+```
+
+The selection of Q2 or DA as a weight can affect results. These metrics are both mean to represent river size (larger rivers have a larger drainage area and median annual flood). Q2 is a more direct measurement of river size since it is based on the actual magnitude of river flows. Drainage area is a good proxy, however, when Q2 values are not available. The relationship between these two metrics can be compared for the `va_gage_output` data:
+
+```{r fig.width = 4.25, fig.height = 3.5, fig.align = "center"}
+ggplot(va_gage_output, aes(x = DA, y = Q2)) + 
+  geom_point(alpha = 0.5) + 
+  geom_abline(aes(intercept = 0, slope = 1), linetype = 3) + 
+  geom_smooth(method = "lm", se = FALSE) + 
+  scale_x_log10(labels = scales::comma) + scale_y_log10(labels = scales::comma) + 
+  labs(x = "Gage Drainage Area",
+       y = "Gage Q2") + 
+  theme_classic() + 
+  expand_limits(x = c(min(va_gage_output$Q2, va_gage_output$DA),
+                      max(va_gage_output$Q2, va_gage_output$DA)),
+                y = c(min(va_gage_output$Q2, va_gage_output$DA),
+                      max(va_gage_output$Q2, va_gage_output$DA)))
+```
+
+There is clearly a strong relationship between DA and Q2, although Q2 values (in this case) are far large than DA. However, these variables are only used to compare relative river size so this will not affect the analysis.
+
+The selection of the weigth impacts the value of weighted `flood_metric`. We can compare the `flood_metric` values for the `va_county_output` using DA or Q2 as the weighting variable:
+
+```{r fig.width = 6, fig.height = 3.5, fig.align = "center", message = FALSE}
+va_county_output2 <- time_series_flood(state = "Virginia", start_date = "2010-01-01",
+                      end_date = "2015-12-31", threshold = "NWS",
+                      flood_type = "flood", weight = "DA")[[2]]
+
+ggplot() + 
+  geom_histogram(data = va_county_output, aes(x = flood_metric, fill = "Q2"), binwidth = 0.03) +
+  geom_histogram(data = va_county_output2, aes(x = flood_metric, y = - ..count.., fill = "DA"), binwidth = 0.03)
+
+```
+
+In this case, the results are not substantially different, althought the DA weights tend to give slightly higher `flood_metric` values. Using DA as a weight also gives `r nrow(va_county_output2)` dates with floods compared to 
+`r nrow(va_county_output)` when using Q2. To get full, unfiltered results, set the `filter_data` input of `time_series_flood` to `FALSE`. Unweighted percentages of gages experiencing a flood on a given data are also returned (`yes_flood` column for NWS flood thresholds and by flood magnitude, e.g. `minor`, for Q2 flood thresholds).
 
 ## More detailed examples
 
 Hurricane Floyd made landfall on Sept. 16, 1999, in North Carolina and caused extensive flooding, especially in eastern North Carolina. Here are maps for the month from Sept.15, 1999 to Oct. 15, 1999:
 
-```{r fig.width = 7.5, fig.height = 3, fig.align = "center", message = FALSE}
+```{r fig.width = 7.5, fig.height = 2.75, fig.align = "center", message = FALSE}
 nc_floods <- run_flood(state = "North Carolina", start_date = "1999-09-15",
                        end_date = "1999-10-15", threshold = "Q2",
                        output = "both")
 nc_maps <- map_flood(nc_floods)
-nc_maps$gage_map
-nc_maps$county_map
+nc_maps[[1]]
+nc_maps[[2]]
 ```
 
-You can use the `map_tracks` function from `hurricaneexposure` (currently available in a development version on GitHub), using the flood maps as the base `plot_object` in this call. For example:
+You can use the `map_tracks` function from `hurricaneexposure`, using the flood maps as the base `plot_object` in this call. For example:
 
 ```{r fig.width = 7.5, fig.height = 4, fig.align = "center", message = FALSE}
 library(hurricaneexposure)
-map_tracks(storms = "Floyd-1999", plot_object = nc_maps$county_map)
+map_tracks(storms = "Floyd-1999", plot_object = nc_maps[[2]])
 ```
 
 ```{r fig.height = 3, fig.width = 4.25, fig.align = "center", message = FALSE}
@@ -183,6 +305,5 @@ map_tracks(storms = c("Bonnie-2004", "Charley-2004",
            plot_object = map_flood(fl_floods, category = "major"),
            color = "aquamarine3")
 ```
-
 
 

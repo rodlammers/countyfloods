@@ -1,3 +1,5 @@
+library(countyfloods)
+
 #Colorado Front Range Floods - September 2013
 start_date <- as.Date("2013-09-09", format = "%Y-%m-%d")
 end_date <- as.Date("2013-09-30", format = "%Y-%m-%d")
@@ -56,7 +58,7 @@ input_df <- data.frame(county_cd = county_cd, start_date = start_date, end_date 
 test <- long_term_flood(input_df = input_df)
 gage <- test[[1]]
 county <- test[[2]]
-map_flood(gage)
+map_flood(county)
 
 county_cd <- c(rep("51013", 5), rep("51107", 5), rep("51059", 5))
 start_date <- rep(c("2010-04-01", "2011-04-01", "2012-04-01", "2013-04-01", "2014-04-01"), 3)
@@ -88,4 +90,3 @@ va_time_series <- time_series_flood(county_cd = c("51013", "51107", "51059"), st
 gage <- va_time_series[[1]]
 county <- va_time_series[[2]]
 time_series_plot(va_time_series[[2]])
-
