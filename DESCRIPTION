@@ -34,6 +34,7 @@ Imports:
 Suggests:
     testthat,
     knitr,
-    rmarkdown
+    rmarkdown,
+    scales
 VignetteBuilder: knitr
 RoxygenNote: 6.0.1
