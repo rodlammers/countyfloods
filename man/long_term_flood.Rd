@@ -86,6 +86,7 @@ returned at the gage level or the county level. This is the same as the
 county codes and date ranges for each.
 }
 \examples{
+\dontrun{
 #Northern VA flooding every April
 county_cd <- c(rep("51013", 5), rep("51107", 5), rep("51059", 5))
 start_date <- rep(c("2010-04-01", "2011-04-01", "2012-04-01", "2013-04-01", "2014-04-01"), 3)
@@ -98,5 +99,5 @@ VA_floods <- long_term_flood(input_df)
 
 #Using NWS values
 VA_floods <- long_term_flood(input_df, threshold = "NWS")
-
+}
 }

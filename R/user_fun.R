@@ -77,6 +77,7 @@
 #' these counties are included as additional rows with data values of NA.
 #'
 #' @examples
+#' \dontrun{
 #' #Use Q2 as flood threshold and get get gage-level output
 #' va_floods <- run_flood(state = "Virginia", start_date = "2015-01-01",
 #'                       end_date = "2015-12-31", threshold = "Q2",
@@ -87,7 +88,7 @@
 #'                       end_date = "2015-12-31", threshold = "NWS",
 #'                       flood_type = "action",
 #'                       output = "county")
-#'
+#' }
 #' @export
 run_flood <- function(county_cd = NULL, state = NULL, start_date, end_date, threshold = "Q2",
                       flood_type = "flood", output = "both", weight = "Q2"){
@@ -221,6 +222,7 @@ run_flood <- function(county_cd = NULL, state = NULL, start_date, end_date, thre
 #' percentage of gages in the county with or without flooding.
 #'
 #' @examples
+#' \dontrun{
 #' #Northern VA flooding every April
 #' county_cd <- c(rep("51013", 5), rep("51107", 5), rep("51059", 5))
 #' start_date <- rep(c("2010-04-01", "2011-04-01", "2012-04-01", "2013-04-01", "2014-04-01"), 3)
@@ -233,7 +235,7 @@ run_flood <- function(county_cd = NULL, state = NULL, start_date, end_date, thre
 #'
 #' #Using NWS values
 #' VA_floods <- long_term_flood(input_df, threshold = "NWS")
-#'
+#' }
 #' @importFrom dplyr %>%
 #'
 #' @export
@@ -380,6 +382,7 @@ long_term_flood <- function(input_df, threshold = "Q2",
 #' percentage of gages in the county with or without flooding.
 #'
 #' @examples
+#' \dontrun{
 #' #Use Q2 as flood threshold
 #' va_time_series <- time_series_flood(state = "Virginia", start_date = "2015-01-01",
 #'                       end_date = "2015-12-31", threshold = "Q2")
@@ -388,7 +391,7 @@ long_term_flood <- function(input_df, threshold = "Q2",
 #' va_time_series <- time_series_flood(state = "Virginia", start_date = "2015-01-01",
 #'                       end_date = "2015-12-31", threshold = "NWS",
 #'                       flood_type = "action")
-#'
+#' }
 #' @export
 time_series_flood <- function(county_cd = NULL, state = NULL, start_date, end_date,
                               threshold = "Q2", flood_type = "flood", weight = "Q2",

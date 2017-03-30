@@ -31,11 +31,12 @@ gages with flooding, maximum flood ratio, average flood ratio, and the
 percent of gages above a specified flood threshold.
 }
 \examples{
+\dontrun{
 #Use Q2 as flood threshold
 va_time_series <- time_series_flood(state = "Virginia", start_date = "2015-01-01",
                       end_date = "2015-12-31", threshold = "Q2")
 
 #Map results
 time_series_plot(va_time_series[[2]])
-
+}
 }

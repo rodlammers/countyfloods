@@ -26,7 +26,7 @@ A dataframe with discharge data for each of the specified monitors.
 Pulls all discharge data for the specified gage numbers and date range.
 }
 \examples{
-
+\dontrun{
 miami_gages <- get_gages("12086", start_date = "2000-01-01",
                             end_date = "2009-12-31")
 miami_flow_data <- get_flow_data(gages_df = miami_gages,
@@ -38,7 +38,7 @@ miami_flow_data <- get_gages("12086", start_date = "2000-01-01",
                                 end_date = "2009-12-31") \%>\%
                    get_flow_data(start_date = "2000-01-01",
                                  end_date = "2000-01-31")
-
+}
 }
 \seealso{
 \code{\link[dataRetrieval]{readNWISdv}}

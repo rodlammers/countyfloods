@@ -87,6 +87,7 @@ Function takes flow data and summarizes flood occurrence through time at
 both the gage and county level.
 }
 \examples{
+\dontrun{
 va_counties <- get_county_cd("Virginia")
 va_gages <- get_gages(va_counties, start_date = "2015-01-01",
                       end_date = "2015-12-31")
@@ -97,5 +98,5 @@ va_time_series <- time_series_analysis(flow_data = va_flow_data, peaks = va_peak
                         gages = va_gages, county_cd = va_counties,
                         q2_val = dplyr::rename_(va_peaks, .dots = list(q2 = "flood_val")),
                         threshold = "Q2")
-
+}
 }

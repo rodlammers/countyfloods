@@ -20,6 +20,7 @@
 #'   (40% - 60%), "High" (60% - 80%), and "very High" (80% - 100%).
 #'
 #' @examples
+#' \dontrun{
 #' #Use Q2 as flood threshold and get get gage-level output
 #' va_floods <- run_flood(state = "Virginia", start_date = "2015-01-01",
 #'                       end_date = "2015-12-31", threshold = "Q2", output = "gage")
@@ -33,7 +34,7 @@
 #'                       output = "county")
 #' #Map results by county
 #' map_flood(va_floods)
-#'
+#' }
 #' @export
 map_flood <- function(flood_stats, category = "minor") {
 
@@ -208,13 +209,14 @@ map_county <- function(county_stats, category = "minor") {
 #' percent of gages above a specified flood threshold.
 #'
 #' @examples
+#' \dontrun{
 #' #Use Q2 as flood threshold
 #' va_time_series <- time_series_flood(state = "Virginia", start_date = "2015-01-01",
 #'                       end_date = "2015-12-31", threshold = "Q2")
 #'
 #' #Map results
 #' time_series_plot(va_time_series[[2]])
-#'
+#' }
 #' @export
 time_series_plot <- function(county_series, category = "moderate",
                              start_date = NULL, end_date = NULL) {

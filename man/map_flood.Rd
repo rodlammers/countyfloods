@@ -30,6 +30,7 @@ Displays a state or multi-state map summarizing flood analysis results either
 by gage or county.
 }
 \examples{
+\dontrun{
 #Use Q2 as flood threshold and get get gage-level output
 va_floods <- run_flood(state = "Virginia", start_date = "2015-01-01",
                       end_date = "2015-12-31", threshold = "Q2", output = "gage")
@@ -43,5 +44,5 @@ va_floods <- run_flood(state = "Virginia", start_date = "2015-01-01",
                       output = "county")
 #Map results by county
 map_flood(va_floods)
-
+}
 }

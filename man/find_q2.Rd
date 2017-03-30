@@ -21,7 +21,7 @@ is obtained using the \code{readNWISpeak} function from the
 \code{dataRetrieval} package.
 }
 \examples{
-
+\dontrun{
 miami_gages <- gage_extract("12086", start_date = "2000-01-01",
                             end_date = "2009-12-31")
 miami_q2 <- find_q2(site_no = miami_gages$site_no)
@@ -29,7 +29,7 @@ miami_q2 <- find_q2(site_no = miami_gages$site_no)
 va_counties <- get_county_cd("Virginia")
 va_gages <- get_gages(va_counties, start_date = "2015-01-01", end_date = "2015-12-31")
 va_q2 <- find_q2(va_gages$site_no)
-
+}
 }
 \seealso{
 \code{\link[dataRetrieval]{readNWISpeak}}

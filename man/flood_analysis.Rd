@@ -57,6 +57,7 @@ Takes flow data and computes flood statistics based on selected flood
 threshold.
 }
 \examples{
+\dontrun{
 va_counties <- get_county_cd("Virginia")
 va_gages <- get_gages(va_counties, start_date = "2015-01-01",
                       end_date = "2015-12-31")
@@ -65,5 +66,5 @@ va_flow_data <- get_flow_data(va_gages, start_date = "2015-01-01",
 va_peaks <- find_q2(va_gages$site_no)
 va_stats <- flood_analysis(flow_data = va_flow_data, peaks = va_peaks,
                        gages = va_gages, county_cd = va_counties, threshold = "Q2")
-
+}
 }

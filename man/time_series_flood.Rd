@@ -89,6 +89,7 @@ and magnitude of flooding will be returned at the gage level or the county
 level.
 }
 \examples{
+\dontrun{
 #Use Q2 as flood threshold
 va_time_series <- time_series_flood(state = "Virginia", start_date = "2015-01-01",
                       end_date = "2015-12-31", threshold = "Q2")
@@ -97,5 +98,5 @@ va_time_series <- time_series_flood(state = "Virginia", start_date = "2015-01-01
 va_time_series <- time_series_flood(state = "Virginia", start_date = "2015-01-01",
                       end_date = "2015-12-31", threshold = "NWS",
                       flood_type = "action")
-
+}
 }

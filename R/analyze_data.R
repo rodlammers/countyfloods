@@ -41,6 +41,7 @@
 #' }
 #'
 #' @examples
+#' \dontrun{
 #' va_counties <- get_county_cd("Virginia")
 #' va_gages <- get_gages(va_counties, start_date = "2015-01-01",
 #'                       end_date = "2015-12-31")
@@ -49,7 +50,7 @@
 #' va_peaks <- find_q2(va_gages$site_no)
 #' va_stats <- flood_analysis(flow_data = va_flow_data, peaks = va_peaks,
 #'                        gages = va_gages, county_cd = va_counties, threshold = "Q2")
-#'
+#' }
 #' @importFrom dplyr %>%
 #'
 #' @export
@@ -144,6 +145,7 @@ flood_analysis <- function(flow_data, peaks, gages, county_cd, q2_val =
 #' percentage of gages in the county with or without flooding.
 #'
 #' @examples
+#' \dontrun{
 #' va_counties <- get_county_cd("Virginia")
 #' va_gages <- get_gages(va_counties, start_date = "2015-01-01",
 #'                       end_date = "2015-12-31")
@@ -153,7 +155,7 @@ flood_analysis <- function(flow_data, peaks, gages, county_cd, q2_val =
 #' va_stats <- flood_analysis(flow_data = va_flow_data, peaks = va_peaks,
 #'                        gages = va_gages, county_cd = va_counties, threshold = "Q2")
 #' va_county_stats <- county_aggregates(flood_stats = va_stats)
-#'
+#' }
 #' @importFrom dplyr %>%
 #'
 #' @export
@@ -377,6 +379,7 @@ county_aggregates2 <- function(flood_stats, county_cd){
 #' percentage of gages in the county with or without flooding.
 #'
 #' @examples
+#' \dontrun{
 #' va_counties <- get_county_cd("Virginia")
 #' va_gages <- get_gages(va_counties, start_date = "2015-01-01",
 #'                       end_date = "2015-12-31")
@@ -387,7 +390,7 @@ county_aggregates2 <- function(flood_stats, county_cd){
 #'                         gages = va_gages, county_cd = va_counties,
 #'                         q2_val = dplyr::rename_(va_peaks, .dots = list(q2 = "flood_val")),
 #'                         threshold = "Q2")
-#'
+#' }
 #' @importFrom dplyr %>%
 #'
 #' @export

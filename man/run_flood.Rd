@@ -95,6 +95,7 @@ at these gage locations are assessed by one of two metrics. Data can be
 returned at the gage level or the county level.
 }
 \examples{
+\dontrun{
 #Use Q2 as flood threshold and get get gage-level output
 va_floods <- run_flood(state = "Virginia", start_date = "2015-01-01",
                       end_date = "2015-12-31", threshold = "Q2",
@@ -105,5 +106,5 @@ va_floods <- run_flood(state = "Virginia", start_date = "2015-01-01",
                       end_date = "2015-12-31", threshold = "NWS",
                       flood_type = "action",
                       output = "county")
-
+}
 }

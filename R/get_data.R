@@ -130,7 +130,7 @@ gage_extract <- function(county_cd, start_date, end_date){
 #' @seealso \code{\link[dataRetrieval]{readNWISdv}}
 #'
 #' @examples
-#'
+#' \dontrun{
 #' miami_gages <- get_gages("12086", start_date = "2000-01-01",
 #'                             end_date = "2009-12-31")
 #' miami_flow_data <- get_flow_data(gages_df = miami_gages,
@@ -142,7 +142,7 @@ gage_extract <- function(county_cd, start_date, end_date){
 #'                                 end_date = "2009-12-31") %>%
 #'                    get_flow_data(start_date = "2000-01-01",
 #'                                  end_date = "2000-01-31")
-#'
+#' }
 #' @export
 get_flow_data <- function(gages_df, start_date, end_date){
 
