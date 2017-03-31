@@ -1,3 +1,6 @@
+not_cran <- Sys.getenv("NOT_CRAN") == "true"
+
+if(not_cran){
 library(countyfloods)
 
 #Colorado Front Range Floods - September 2013
@@ -90,3 +93,4 @@ va_time_series <- time_series_flood(county_cd = c("51013", "51107", "51059"), st
 gage <- va_time_series[[1]]
 county <- va_time_series[[2]]
 time_series_plot(va_time_series[[2]])
+}
