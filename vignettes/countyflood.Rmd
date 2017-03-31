@@ -314,5 +314,3 @@ map_tracks(storms = c("Bonnie-2004", "Charley-2004",
            plot_object = map_flood(fl_floods, category = "major"),
            color = "aquamarine3")
 ```
-
-
