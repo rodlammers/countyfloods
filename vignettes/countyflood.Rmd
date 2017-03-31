@@ -10,6 +10,19 @@ vignette: >
 ---
 
 ```{r echo = FALSE}
+not_cran <- Sys.getenv("NOT_CRAN") == "false"
+if (!not_cran) {
+   knitr::opts_chunk$set(eval = FALSE)
+    msg <- paste("Note: Examples in this vignette are set to not run on CRAN. If you would",
+                 "like to build this vignette locally, you can do so by first setting the",
+                 "environmental variable 'NOT_CRAN' to 'true' on your computer and then ",
+                 "rebuilding the vignette.")
+    msg <- paste(strwrap(msg), collapse="\n")
+    message(msg)
+}
+```
+
+```{r echo = FALSE}
 library(countyfloods)
 ```
 
@@ -77,7 +90,7 @@ head(va_nws)
 summary(va_nws$flood_val)
 ```
 
-Many USGS gages do not have NWS flood thresholds for any of the four categories of floods. For example, out of the `r nrow(va_gages)` gages pulled for Virginia for `va_gages`, only `r nrow(va_nws)` have one or more NWS flood thresholds. Therefore, use of the NWS flood thresholds to identify floods may severely limit the sample size of the data output. 
+Many USGS gages do not have NWS flood thresholds for any of the four categories of floods. Therefore, use of the NWS flood thresholds to identify floods may severely limit the sample size of the data output. 
 
 Another way to get gage-specific flood thresholds is with the `find_q2` function, which calculates the median annual flood for each gage using a minimum of 20 years of USGS annual peak flow data:
 
@@ -86,8 +99,6 @@ va_q2 <- find_q2(site_no = va_gages$site_no)
 head(va_q2)
 summary(va_q2$flood_val)
 ```
-
-For the Q2 flood threshold, `r nrow(va_q2)` of the gages in Virginia have flood threshold values. 
 
 You can compare the results from these two methods for sites where you can get both values (note that both axes are shown on a log-10 scale): 
 
@@ -276,8 +287,7 @@ ggplot() +
 
 ```
 
-In this case, the results are not substantially different, althought the DA weights tend to give slightly higher `flood_metric` values. Using DA as a weight also gives `r nrow(va_county_output2)` dates with floods compared to 
-`r nrow(va_county_output)` when using Q2. To get full, unfiltered results, set the `filter_data` input of `time_series_flood` to `FALSE`. Unweighted percentages of gages experiencing a flood on a given data are also returned (`yes_flood` column for NWS flood thresholds and by flood magnitude, e.g. `minor`, for Q2 flood thresholds).
+In this case, the results are not substantially different, althought the DA weights tend to give slightly higher `flood_metric` values. To get full, unfiltered results, set the `filter_data` input of `time_series_flood` to `FALSE`. Unweighted percentages of gages experiencing a flood on a given data are also returned (`yes_flood` column for NWS flood thresholds and by flood magnitude, e.g. `minor`, for Q2 flood thresholds).
 
 ## More detailed examples
 
