@@ -72,7 +72,7 @@ To determine when a flood occurred, we need a value to determine a gage-specific
 
 One way to get gage-specific flood thresholds is with the `find_nws` function, which gets the National Weather Service flood discharge threshold, when available, for a gage site. Note there are four NWS thresholds for each gage, representing cutoffs for different levels of floods: "Action", "Flood", "Moderate", and "Major". These thresholds are available through the Advanced Hydrologic Prediction Service's "River Stage" information. They are originally in feet for stages, which we convert to streamflow (in cubic feet per second) using USGS rating tables for each gage (pulled using the `readNWISrating` function from the `dataRetrieval` package). 
 
-Gages may have some, all, or none of these NWS flood thresholds available. If a gage does not have any of the four thresholds, it is excluded from the outpout of the `find_nws` function. For example, to get "Moderate" flood thresholds for the Virginia gages, you can run: 
+Gages may have some, all, or none of these NWS flood thresholds available. If a gage does not have any of the four thresholds, it is excluded from the output of the `find_nws` function. For example, to get "Moderate" flood thresholds for the Virginia gages, you can run: 
 
 ```{r}
 va_nws <- find_nws(site_no = va_gages$site_no, type = "moderate")
@@ -158,15 +158,14 @@ ggplot(va_floods, aes(x = max_peak, fill = flood)) +
 
 There is also a function that will allow you to get county-level aggregate statistics from this gage-level summary.
 Any counties with no gages or for which the gages didn't have flow data or flood threshold values are also 
-included. If the Q2 flood threshold is used, this function gives the percentage of gages in the county in above each flood magnitude classification (e.g. "Minor", "Moderate", etc.): 
+included. If the Q2 flood threshold is used, this function gives the percentage of gages in the county above each flood magnitude classification (e.g. "Minor", "Moderate", etc.): 
 
 ```{r}
 va_county_stats <- county_aggregates(flood_stats = va_floods)
 head(va_county_stats)
 ```
 
-You can use the `run_flood` function to put all of this together, and pull all flood summaries by either gage (`output = "gage"`), county (`output = "county"`), or both (`output = "both"`) for either a set of counties or all counties in a state. It is more efficient to set (`output = "both"`) and then extract gage or county level data
-from the list than running each separately since pulling flow data is time consuming.
+You can use the `run_flood` function to put all of this together, and pull all flood summaries by either gage (`output = "gage"`), county (`output = "county"`), or both (`output = "both"`) for either a set of counties or all counties in a state. Because it is time consuming to pull flow data, it is more efficient to set (`output = "both"`) and then extract gage or county level data from the list rather than running each separately.
 
 For example, to get all the flood statistics by gage for all gages with available data in Virginia, you can run: 
 
@@ -223,10 +222,7 @@ va_county_output <- va_floods[[2]]
 head(va_county_output)
 ```
 
-If you are interested in seeing when flooding occurred over a set time period, you can perform a time series
-analysis using the `time_series_flood` function. This has similar inputs to the `run_flood` function. This will
-also output a `flood_metric` value which is the fraction of gages in the county experiencing a flood on that date,
-weighted by river size. River size is calculated as either the logarithm of the median annual flood (Q2, the default) or as the logarithm of the drainage area. This can be changed using the `weight` input. For
+If you are interested in seeing when flooding occurred over a set time period, you can perform a time series analysis using the `time_series_flood` function. This has similar inputs to the `run_flood` function. This will also output a `flood_metric` value which is the fraction of gages in the county experiencing a flood on that date, weighted by river size. River size is calculated as either the logarithm of the median annual flood (Q2, the default) or as the logarithm of the drainage area. This can be changed using the `weight` input. For
 example, if you wanted to examine when flooding occurred in Virginia from 2010 to 2015:
 
 ```{r message = FALSE}
@@ -241,13 +237,13 @@ head(va_county_output)
 
 The county-level output can be plotted using the `time_series_plot` function which shows bar charts of the
 timing and magnitude of floods during the selected time period. You can select values for `start_date` and `end_date` to change the x-limits on the plots or the default is to show the full time period including any 
-flood.
+flood. For example, here is the plot for Halifax County, VA:
 
 ```{r fig.height = 6, fig.width = 8, fig.align = "center", message = FALSE}
 time_series_plot(va_county_output[va_county_output$county == "halifax", ])
 ```
 
-The selection of Q2 or DA as a weight can affect results. These metrics are both mean to represent river size (larger rivers have a larger drainage area and median annual flood). Q2 is a more direct measurement of river size since it is based on the actual magnitude of river flows. Drainage area is a good proxy, however, when Q2 values are not available. The relationship between these two metrics can be compared for the `va_gage_output` data:
+The selection of Q2 or DA as a weight can affect results. These metrics are both meant to represent river size (larger rivers have a larger drainage area and median annual flood). Q2 is a more direct measurement of river size since it is based on the actual magnitude of river flows. Drainage area is a good proxy, however, when Q2 values are not available. The relationship between these two metrics can be compared for the `va_gage_output` data:
 
 ```{r fig.width = 4.25, fig.height = 3.5, fig.align = "center"}
 ggplot(va_gage_output, aes(x = DA, y = Q2)) + 
@@ -264,9 +260,9 @@ ggplot(va_gage_output, aes(x = DA, y = Q2)) +
                       max(va_gage_output$Q2, va_gage_output$DA)))
 ```
 
-There is clearly a strong relationship between DA and Q2, although Q2 values (in this case) are far large than DA. However, these variables are only used to compare relative river size so this will not affect the analysis.
+There is clearly a strong relationship between DA and Q2, although Q2 values (in this case) are far larger than DA. However, only one of these variables would be used at one time to compare relative river size so this will not affect the analysis.
 
-The selection of the weigth impacts the value of weighted `flood_metric`. We can compare the `flood_metric` values for the `va_county_output` using DA or Q2 as the weighting variable:
+The selection of the weight impacts the value of weighted `flood_metric`. We can compare the `flood_metric` values for the `va_county_output` using DA or Q2 as the weighting variable:
 
 ```{r fig.width = 6, fig.height = 3.5, fig.align = "center", message = FALSE}
 va_county_output2 <- time_series_flood(state = "Virginia", start_date = "2010-01-01",
@@ -280,11 +276,11 @@ ggplot() +
 ```
 
 In this case, the results are not substantially different, althought the DA weights tend to give slightly higher `flood_metric` values. Using DA as a weight also gives `r nrow(va_county_output2)` dates with floods compared to 
-`r nrow(va_county_output)` when using Q2. To get full, unfiltered results, set the `filter_data` input of `time_series_flood` to `FALSE`. Unweighted percentages of gages experiencing a flood on a given data are also returned (`yes_flood` column for NWS flood thresholds and by flood magnitude, e.g. `minor`, for Q2 flood thresholds).
+`r nrow(va_county_output)` when using Q2. To get full, unfiltered results, set the `filter_data` input of `time_series_flood` to `FALSE`. Unweighted percentages of gages experiencing a flood on a given date are also returned (`yes_flood` column for NWS flood thresholds and by flood magnitude, e.g. `minor`, for Q2 flood thresholds).
 
 ## More detailed examples
 
-Hurricane Floyd made landfall on Sept. 16, 1999, in North Carolina and caused extensive flooding, especially in eastern North Carolina. Here are maps for the month from Sept.15, 1999 to Oct. 15, 1999:
+Hurricane Floyd made landfall on Sept. 16, 1999, in North Carolina and caused extensive flooding, especially in the eastern part of the state. Here are maps for the month from Sept. 15, 1999 to Oct. 15, 1999:
 
 ```{r fig.width = 7.5, fig.height = 2.75, fig.align = "center", message = FALSE}
 nc_floods <- run_flood(state = "North Carolina", start_date = "1999-09-15",
