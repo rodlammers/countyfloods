@@ -58,14 +58,18 @@ get_gages <- function(county_cd, start_date, end_date){
 
   gages_df <- suppressWarnings(dplyr::bind_rows(gages_list))
 
-  #remove query time column, remove duplicates, and include only stream gages (no canals or tidal rivers)
+  #If queryTime is a column (from older versions of dataRetrieval), then remove
+  if ("queryTime" %in% colnames(gages_df)){
+    gages_df <- dplyr::select_(gages_df, .dots = list(quote(-queryTime)))
+  }
+
+  #remove duplicates, and include only stream gages (no canals or tidal rivers)
   gages_df <- gages_df %>%
-    dplyr::select_(.dots = list(quote(-queryTime))) %>%
     dplyr::filter_(~ site_tp_cd == "ST") %>%
     dplyr::distinct_()
 
   #Get gage attributes and add drainage area and county code to data frame
-  gage_attr <- gage_attr <- dataRetrieval::readNWISsite(gages_df$site_no) %>%
+  gage_attr <- dataRetrieval::readNWISsite(gages_df$site_no) %>%
     dplyr::select_(.dots = list("site_no", "state_cd", "county_cd", "drain_area_va"))
 
   #Match county code and drainage area to each gage
