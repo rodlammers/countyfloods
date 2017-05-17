@@ -1,7 +1,7 @@
 Package: countyfloods
 Type: Package
 Title: Quantify United States County-Level Flood Measurements
-Version: 0.0.1
+Version: 0.0.2
 Authors@R: c(person("Rod", "Lammers", email = "rodlammers@gmail.com",
   role = c("aut", "cre")),
   person("Brooke", "Anderson", email = "brooke.anderson@colostate.edu",
