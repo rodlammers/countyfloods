@@ -126,10 +126,19 @@ run_flood <- function(county_cd = NULL, state = NULL, start_date, end_date, thre
 
   gages <- dplyr::filter_(gages, ~ site_no %in% peaks$site_no)
 
+  #Check if there are no gages
+  if (nrow(gages) == 0){
+    stop("There are no gages with enough data to determine a flood threshold.")
+  }
+
   #get flow data
   flow_data <- get_flow_data(gages, start_date = start_date,
                              end_date = end_date)
 
+  #Check if there is flow data
+  if (nrow(flow_data) == 0){
+    stop("There is no flow data available for the selected gages.")
+  }
   #get flood stats by gage
   flood_stats <- flood_analysis(flow_data = flow_data, peaks = peaks, gages = gages,
                                 county_cd = county_cd, q2_val = q2_val, threshold = threshold, weight = weight)

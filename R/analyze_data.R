@@ -74,7 +74,7 @@ flood_analysis <- function(flow_data, peaks, gages, county_cd, q2_val =
                      flood_dur = ~ sum(flood_ratio > 1, na.rm = TRUE),
                      max_peak = ~ ifelse(sum(!is.na(flood_ratio) > 0),
                                    max(flood_ratio, na.rm = TRUE), NA),
-                     fips = ~ as.numeric(county_cd),
+                     fips = ~ county_cd,
                      num_missing = ~ sum(is.na(flood_ratio)),
                      Q2 = ~ dplyr::first(q2),
                      DA = ~ dplyr::first(DA),
@@ -87,13 +87,13 @@ flood_analysis <- function(flow_data, peaks, gages, county_cd, q2_val =
     if(length(add_county_cd) > 0) {
       flood_stats <- dplyr::bind_rows(flood_stats,
                                       data.frame(county_cd = add_county_cd,
-                                                fips = as.numeric(add_county_cd),
+                                                fips = add_county_cd,
                                                 site_no = as.character(-1:(-length(add_county_cd)))))
     }
 
-    flood_stats <- flood_stats %>% dplyr::left_join(maps::county.fips, by = "fips") %>%
+    flood_stats <- flood_stats %>% dplyr::left_join(fips_table, by = "fips") %>%
     dplyr::select_(.dots = list("-fips")) %>%
-    tidyr::separate_(col = "polyname", into = c("state", "county"), sep = ",") %>%
+    #tidyr::separate_(col = "polyname", into = c("state", "county"), sep = ",") %>%
     dplyr::arrange_(~ dplyr::desc(max_peak))        #sort flood stats by magnitude
 
     if (threshold == "Q2") {
@@ -415,12 +415,13 @@ time_series_analysis <- function(flow_data, peaks, gages, county_cd, q2_val,
     dplyr::rename_(.dots = list(lat = "dec_lat_va", long = "dec_long_va", Q2 = "q2")) %>%
     dplyr::mutate_(flood_ratio = ~ discharge / flood_val) %>%
     dplyr::mutate_(size = ~ log10(Q2)) %>%
-    dplyr::mutate_(fips = ~ as.numeric(county_cd)) %>%
+    dplyr::mutate_(fips = ~ county_cd) %>%
     dplyr::filter_(~ !is.na(flood_val)) %>%
-    dplyr::left_join(maps::county.fips, by = "fips") %>%
-    dplyr::select_(.dots = list("-fips")) %>%
-    dplyr::mutate_(map_id = ~ polyname) %>%
-    tidyr::separate_(col = "polyname", into = c("state", "county"), sep = ",")
+    dplyr::left_join(fips_table, by = "fips") %>%
+    dplyr::select_(.dots = list("-fips"))
+  # %>%
+    # dplyr::mutate_(map_id = ~ polyname) %>%
+    # tidyr::separate_(col = "polyname", into = c("state", "county"), sep = ",")
 
   #Change size to log of drainage area if user specifies
   if (weight == "DA"){

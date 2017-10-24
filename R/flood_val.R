@@ -39,6 +39,8 @@ find_q2 <- function(site_no){
                    peak_va = ~ as.numeric(peak_va)) %>%
     dplyr::filter_(~ !is.na(peak_dt)) %>%
     dplyr::group_by_(~ site_no) %>%
+    dplyr::mutate_(n = ~ length(site_no)) %>%
+    dplyr::filter_(~ n > 2) %>%
     dplyr::summarize_(flood_val = ~ construct_prob_plot(peak_va),
                       years = ~ sum(!is.na(peak_va))) %>%
     dplyr::filter_(~ years >= 20)

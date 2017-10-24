@@ -172,7 +172,8 @@ get_flow_data <- function(gages_df, start_date, end_date){
   #Combine into one data frame and keep only site_no, date, and discharge
   #columns
   flow_data <- dplyr::bind_rows(flow_data) %>%
-    dplyr::select_(~ site_no, ~ date, ~ discharge)
+    dplyr::select_(~ site_no, ~ date, ~ discharge) %>%
+    dplyr::filter_(~ discharge > 0)
 
   return(flow_data)
 }
@@ -207,7 +208,7 @@ get_county_cd <- function(state){
 
   #put all fips codes in single array, adding a leading zero if codes are only
   # 4 digits long. Also, ensure that each FIPS code only is output once.
-  fips_cd_array <- unique(sprintf("%05d", fips_cd$fips))
+  fips_cd_array <- unique(sprintf("%05s", fips_cd$fips))
 
   return(fips_cd_array)
 }

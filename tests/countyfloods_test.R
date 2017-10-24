@@ -93,4 +93,28 @@ va_time_series <- time_series_flood(county_cd = c("51013", "51107", "51059"), st
 gage <- va_time_series[[1]]
 county <- va_time_series[[2]]
 time_series_plot(va_time_series[[2]])
+
+#Texas flooding
+# state <- "Texas"
+# tx <- time_series_flood(state = state, start_date = "2017-08-24", end_date = "2017-09-10", filter_data = FALSE)
+# time_series_map(tx[[1]], filename = "C:/Users/rlammers/Desktop/Hurricane Photos/TX")
+#
+# #Puerto Rico
+# pr <- time_series_flood(state = "Puerto Rico", start_date = "2017-09-17", end_date = "2017-09-30",
+#                         filter_data = FALSE)
+# time_series_map(pr[[1]], filename = "C:/Users/rlammers/Desktop/Hurricane Photos/PR")
+#
+# #Florida
+# fl <- time_series_flood(state = "Florida", start_date = "2017-09-08", end_date = "2017-09-25", filter_data = FALSE)
+# time_series_map(fl[[2]], filename = "C:/Users/rlammers/Desktop/Hurricane Photos/FL")
+#
+# #Hawaii
+# hi <- time_series_flood(state = "Hawaii", start_date = "2017-09-01", end_date = "2017-09-03", filter_data = FALSE)
+# time_series_map(hi[[1]])
+#
+# #Alaska
+# ak <- time_series_flood(state = "Alaska", start_date = "2017-09-01", end_date = "2017-09-01", filter_data = FALSE)
+# time_series_map(ak[[1]])
 }
+
+

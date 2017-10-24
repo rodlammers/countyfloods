@@ -251,6 +251,13 @@ flood. For example, here is the plot for Halifax County, VA:
 time_series_plot(va_county_output[va_county_output$county == "halifax", ])
 ```
 
+The results of the `time_series_flood` function can be mapped using the `time_series_map` function. This creates one map per day with data. These figures can be saved to a file and used to create a movie or gif using an external program (e.x. ImageJ or ImageMagick). In order to get the full time series requested, use `filter_data = FALSE` in the `time_series_flood` function. The following code looks at flooding in Texas after Hurricane Harvey hit in September 2017:
+
+```{r eval = FALSE}
+  tx <- time_series_flood(state = "Texas", start_date = "2017-08-24", end_date = "2017-09-10", filter_data = FALSE)
+  time_series_map(tx[[1]])
+```
+
 The selection of Q2 or DA as a weight can affect results. These metrics are both meant to represent river size (larger rivers have a larger drainage area and median annual flood). Q2 is a more direct measurement of river size since it is based on the actual magnitude of river flows. Drainage area is a good proxy, however, when Q2 values are not available. The relationship between these two metrics can be compared for the `va_gage_output` data:
 
 ```{r fig.width = 4.25, fig.height = 3.5, fig.align = "center"}

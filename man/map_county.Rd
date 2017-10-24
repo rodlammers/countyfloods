@@ -4,7 +4,7 @@
 \alias{map_county}
 \title{Maps flood data by county}
 \usage{
-map_county(county_stats, category = "minor")
+map_county(county_stats, category = "minor", date = "")
 }
 \arguments{
 \item{county_stats}{Data frame of flood analyasis results, summarized by

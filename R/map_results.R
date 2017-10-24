@@ -67,13 +67,15 @@ map_flood <- function(flood_stats, category = "minor") {
 #' occurrence (e.g. yes/no).
 #'
 #' @param flood_stats Data frame of flood analysis results, by gage.
+#' @param date Date of data mapped to be printed at the top of the image. This
+#'   argument is used by the `time_series_map` function.
 #'
 #' @return A map of USGS gages color coded by maximum flood magnitude.
 #'
 #' @importFrom dplyr %>%
 #'
 #' @export
-map_gage <- function(flood_stats) {
+map_gage <- function(flood_stats, date = "") {
 
   if (dplyr::first(flood_stats$flood) == "No Flood" | dplyr::first(flood_stats$flood) == "Flood"){
     colors <- colors <- c("#993404", "#FFFFFF")
@@ -96,23 +98,60 @@ map_gage <- function(flood_stats) {
     warning("Point size based on log10(Q2).")
   }
 
+  #sort to print highest floods last
+  if ("flood_ratio" %in% colnames(flood_stats)){
+    flood_stats <- flood_stats %>%
+      dplyr::arrange_(~ flood_ratio)
+  }else{
+    flood_stats <- flood_stats %>%
+      dplyr::arrange_(~ max_peak)
+  }
 
-  region <- as.character(unique(flood_stats$state))
+  if (!(dplyr::first(flood_stats$state) %in% c("puerto rico", "hawaii", "alaska"))){
+    region <- as.character(unique(flood_stats$state))
 
-  counties <- ggplot2::map_data("county", region = region)
-  counties_sub <- counties[counties$subregion %in% flood_stats$county[!is.na(flood_stats$lat)], ]
-  counties_sub_ND <- counties[counties$subregion %in% flood_stats$county[is.na(flood_stats$lat)], ]
-  ggplot2::ggplot(counties_sub, ggplot2::aes_string(x = "long", y = "lat", group = "group")) +
-    ggplot2::geom_polygon(fill = "gray95", color = "black") +
-    ggplot2::geom_polygon(data = counties, ggplot2::aes_string(x = "long", y = "lat", group = "group"),
-                          fill = NA, color = "black") +
-    ggplot2::geom_polygon(data = counties_sub_ND, ggplot2::aes_string(x = "long", y = "lat", group = "group"),
-                          fill = "gray60", color = "black") +
-    ggplot2::geom_point(data = flood_stats, ggplot2::aes_string(x = "long", y = "lat", group = NA, fill = "flood",
-                        size = "size"), alpha = 0.8, pch = 21, show.legend = TRUE) +
-    ggplot2::scale_fill_manual(values = colors) +
-    ggplot2::coord_map() +
-    ggplot2::theme_void()
+    counties <- ggplot2::map_data("county", region = region)
+    counties_sub <- counties[counties$subregion %in% flood_stats$county[!is.na(flood_stats$lat)], ]
+    counties_sub_ND <- counties[counties$subregion %in% flood_stats$county[is.na(flood_stats$lat)], ]
+    ggplot2::ggplot(counties_sub, ggplot2::aes_string(x = "long", y = "lat", group = "group")) +
+      ggplot2::geom_polygon(fill = "gray95", color = "black") +
+      ggplot2::geom_polygon(data = counties, ggplot2::aes_string(x = "long", y = "lat", group = "group"),
+                            fill = NA, color = "black") +
+      ggplot2::geom_polygon(data = counties_sub_ND, ggplot2::aes_string(x = "long", y = "lat", group = "group"),
+                            fill = "gray60", color = "black") +
+      ggplot2::geom_point(data = flood_stats, ggplot2::aes_string(x = "long", y = "lat", group = NA, fill = "flood",
+                          size = "size"), alpha = 0.8, pch = 21, show.legend = TRUE) +
+      ggplot2::guides(size = "none") +
+      ggplot2::scale_fill_manual(values = colors, drop = FALSE) +
+      ggplot2::coord_map() +
+      ggplot2::theme_void() +
+      ggplot2::labs(title = date) +
+      ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
+  }
+  else{
+    if (dplyr::first(flood_stats$state) == "puerto rico"){
+      state <- ggplot2::map_data("world", region = "Puerto Rico")
+    }
+    else if (dplyr::first(flood_stats$state) == "alaska"){
+      state <- ggplot2::map_data("world", xlim = c(-170, -130), ylim = c(50, 72), lforce = "e")
+    }
+    else {
+      state <- ggplot2::map_data("world", xlim = c(-162, -154), ylim = c(18, 23))
+    }
+
+
+    ggplot2::ggplot(state, ggplot2::aes_string(x = "long", y = "lat", group = "group")) +
+      ggplot2::geom_polygon(data = state, ggplot2::aes_string(x = "long", y = "lat", group = "group"),
+                            fill = NA, color = "black") +
+      ggplot2::geom_point(data = flood_stats, ggplot2::aes_string(x = "long", y = "lat", group = NA, fill = "flood",
+                                                                  size = "size"), alpha = 0.8, pch = 21, show.legend = TRUE) +
+      ggplot2::guides(size = "none") +
+      ggplot2::scale_fill_manual(values = colors, drop = FALSE) +
+      ggplot2::coord_map() +
+      ggplot2::theme_void() +
+      ggplot2::labs(title = date) +
+      ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
+  }
 }
 
 #' Maps flood data by county
@@ -127,13 +166,19 @@ map_gage <- function(flood_stats) {
 #'   for mapping (one of "minor", "moderate", "major", or "extreme"). This
 #'   parameter only works when mapping county-level, rather than gage-level,
 #'   values.
+#' @param date Date of data mapped to be printed at the top of the image. This
+#'   argument is used by the `time_series_map` function.
 #'
 #' @return A map of counties color coded by percentage of gages experiencing flooding.
 #'
 #' @importFrom dplyr %>%
 #'
 #' @export
-map_county <- function(county_stats, category = "minor") {
+map_county <- function(county_stats, category = "minor", date = "") {
+
+  if (county_stats$state %in% c("puerto rico", "alaska", "hawaii")){
+    stop("Sorry but we can't produce county maps for Puerto Rico, Alaska, or Hawaii.")
+  }
 
   #Check inputs and return error messages as necessary
   category <- tolower(category)
@@ -184,9 +229,11 @@ map_county <- function(county_stats, category = "minor") {
     ggplot2::geom_polygon(ggplot2::aes_string(fill = "cat"), color = "black") +
     ggplot2::geom_polygon(data = counties, ggplot2::aes_string(x = "long", y = "lat", group = "group"),
                           fill = NA, color = "black") +
-    ggplot2::scale_fill_manual(values = colors) +
+    ggplot2::scale_fill_manual(values = colors, drop = FALSE) +
     ggplot2::coord_map() +
-    ggplot2::theme_void()
+    ggplot2::theme_void() +
+    ggplot2::labs(title = date) +
+    ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
 }
 
 #' Function plots time series data by county
@@ -269,5 +316,91 @@ time_series_plot <- function(county_series, category = "moderate",
 
   return(NA)
   }))
+
+}
+
+#' Function maps time series flood data, either by gage or by county
+#'
+#' Displays a state or multi-state map summarizing flood analysis results either
+#' by gage or county for each individual date with data.
+#'
+#' @param flood_stats Either a data frame of flood analysis results, by gage or by county,
+#'   or a list of both data frames.
+#' @param category Character string of the flood magnitude category to be used
+#'   for mapping (one of "minor", "moderate", "major", or "extreme"). This
+#'   parameter only works when mapping county-level, rather than gage-level,
+#'   values.
+#' @param filename Character string of the file path and beginning of name of where
+#'   to save the individual images generated. For example, "C:/Desktop/TX" would produce
+#'   image files saved as "TX_Gage_Map_Date.png" or "TX_County_Map_Date.png" where
+#'   "Date" is replaced by the actual date. If no filename is provided, the images
+#'   aren't saved but are displayed in the plot viewer.
+#'
+#' @return For each date with data, a map of the state(s) analyzed showing counties
+#'   and gages color coded based on flood magnitude, depending on the type of data
+#'   in flood_stats. Gage flood thresholds are "None" (flood_ratio < 1), "Minor"
+#'   (flood_ratio < 1.5), "Moderate" (flood_ratio < 2), "Major" (flood_ratio < 5),
+#'   and "Extreme" (flood_ratio > 5). For county aggregate maps, flood exposure
+#'   is assessed based on the percentage of gages in the county at or above a specified
+#'   flood threshold. Exposure categories include "Low" (0% - 20%), "Moderate"
+#'   (20% - 40%), "Moderate-High" (40% - 60%), "High" (60% - 80%), and "very High"
+#'   (80% - 100%).
+#'
+#' @examples
+#' \dontrun{
+#' #Use the time_series_flood function with option filter_data = FALSE to get data
+#'   tx <- time_series_flood(state = "Texas", start_date = "2017-08-24", end_date =
+#'         "2017-09-10", filter_data = FALSE)
+#'
+#' #Returns a list of gage data and county data. Can map them individually or all at once
+#    time_series_map(tx)
+#' }
+#' @export
+time_series_map <- function(flood_stats, category = "minor", filename = ""){
+
+  #Check if flood_stats data is at the gage- or county-level and call
+  #appropriate mapping function
+  if (!is.data.frame(flood_stats)) {
+    output <- "both"
+  }else if (names(flood_stats)[1] == "site_no") {
+    output <- "gage"
+  }else if (names(flood_stats)[1] == "county_cd") {
+    output <- "county"
+  }
+
+  if (output == "gage") {
+    plyr::d_ply(flood_stats, "date", function(x, filename){
+      if (filename != ""){
+        png(paste0(filename, "_Gage_Map_", x$date[1], ".png"), type = "cairo", units = "in",
+            height = 4, width = 4, res = 500)
+      }
+      print(map_gage(flood_stats = x, date = x$date[1]))
+
+      if (filename != ""){
+        dev.off()
+      }
+
+    }, filename)
+
+  }else if (output == "county") {
+    plyr::d_ply(flood_stats, "date", function(x, category, filename){
+      if (filename != ""){
+        png(paste0(filename, "_County_Map_", x$date[1], ".png"), type = "cairo", units = "in",
+            height = 4, width = 4, res = 500)
+      }
+      print(map_county(county_stats = x, category = category, date = x$date[1]))
+
+      if (filename != ""){
+        dev.off()
+      }
+    }, category, filename)
+  }else if (output == "both") {
+    plyr::d_ply(flood_stats[[1]], "date", function(x){
+      print(map_gage(flood_stats = x, date = x$date[1]))
+    })
+    plyr::d_ply(flood_stats[[2]], "date", function(x){
+      print(map_county(county_stats = x, category = category, date = x$date[1]))
+    })
+  }
 
 }

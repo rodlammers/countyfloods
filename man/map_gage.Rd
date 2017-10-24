@@ -4,7 +4,7 @@
 \alias{map_gage}
 \title{Maps flood data by gage}
 \usage{
-map_gage(flood_stats)
+map_gage(flood_stats, date = "")
 }
 \arguments{
 \item{flood_stats}{Data frame of flood analysis results, by gage.}
