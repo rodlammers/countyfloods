@@ -14,6 +14,9 @@ county.}
 for mapping (one of "minor", "moderate", "major", or "extreme"). This
 parameter only works when mapping county-level, rather than gage-level,
 values.}
+
+\item{date}{Date of data mapped to be printed at the top of the image. This
+argument is used by the `time_series_map` function.}
 }
 \value{
 A map of counties color coded by percentage of gages experiencing flooding.

@@ -39,4 +39,5 @@ va_time_series <- time_series_flood(state = "Virginia", start_date = "2015-01-01
 #Map results
 time_series_plot(va_time_series[[2]])
 }
+
 }

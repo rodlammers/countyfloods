@@ -18,7 +18,8 @@ values.}
 \item{filename}{Character string of the file path and beginning of name of where
 to save the individual images generated. For example, "C:/Desktop/TX" would produce
 image files saved as "TX_Gage_Map_Date.png" or "TX_County_Map_Date.png" where
-"Date" is replaced by the actual date.}
+"Date" is replaced by the actual date. If no filename is provided, the images
+aren't saved but are displayed in the plot viewer.}
 }
 \value{
 For each date with data, a map of the state(s) analyzed showing counties

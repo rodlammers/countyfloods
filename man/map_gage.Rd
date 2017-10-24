@@ -8,6 +8,9 @@ map_gage(flood_stats, date = "")
 }
 \arguments{
 \item{flood_stats}{Data frame of flood analysis results, by gage.}
+
+\item{date}{Date of data mapped to be printed at the top of the image. This
+argument is used by the `time_series_map` function.}
 }
 \value{
 A map of USGS gages color coded by maximum flood magnitude.

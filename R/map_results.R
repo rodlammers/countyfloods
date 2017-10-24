@@ -264,6 +264,9 @@ map_county <- function(county_stats, category = "minor", date = "") {
 #' #Map results
 #' time_series_plot(va_time_series[[2]])
 #' }
+#'
+#' @importFrom grDevices dev.off png
+#'
 #' @export
 time_series_plot <- function(county_series, category = "moderate",
                              start_date = NULL, end_date = NULL) {
