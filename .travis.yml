@@ -13,3 +13,8 @@ r_github_packages:
 
 r_binary_packages:
   - Hmisc
+
+script:
+  - |
+    R CMD build .
+    travis_wait 20 R CMD check packageName*tar.gz
