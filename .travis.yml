@@ -16,5 +16,5 @@ r_binary_packages:
 
 script:
   - |
-    R CMD build --no-build-vignettes .
-    travis_wait 20 R CMD check --no-vignettes packageName*tar.gz
+    R CMD build .
+    travis_wait 40 R CMD check countyfloods*tar.gz
