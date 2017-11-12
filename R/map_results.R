@@ -176,7 +176,7 @@ map_gage <- function(flood_stats, date = "") {
 #' @export
 map_county <- function(county_stats, category = "minor", date = "") {
 
-  if (county_stats$state %in% c("puerto rico", "alaska", "hawaii")){
+  if (sum(county_stats$state %in% c("puerto rico", "alaska", "hawaii")) > 0){
     stop("Sorry but we can't produce county maps for Puerto Rico, Alaska, or Hawaii.")
   }
 
