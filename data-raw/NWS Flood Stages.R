@@ -1,5 +1,6 @@
 library(dataRetrieval)
 library(plyr)
+library(dplyr)
 
 # BA: Do we have information anywhere about where we got these two files ("NWS
 # Flood Stages.txt" and "USGS-NWS Gages.txt")? Maybe the website where we
@@ -34,17 +35,18 @@ NWS_data <- NWS_data[!is.na(NWS_data$USGS), ]
 getQ <- function(gage){
   stages <- gage[13:16]
 
-  rating <- readNWISrating(gage$USGS)
+  rating <- readNWISrating(gage$USGS, type = "exsa")
 
   if (length(rating[, 1]) < 1 | is.null(rating$INDEP) |
       is.null(rating$DEP)) {
     Q <- rep(NA, 4)
   }else {
-    #interpolate points
-    points <- spline(rating$INDEP, rating$DEP, n = 50)
+    #adjust values based on shift
+    rating <- rating %>%
+      mutate(Stage = INDEP + SHIFT)
 
     #find discharge values based on stages
-    Q <- approx(points$x, points$y, xout = stages)
+    Q <- approx(rating$Stage, rating$DEP, xout = stages)
     Q <- Q$y
   }
 
